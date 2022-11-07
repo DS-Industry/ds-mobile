@@ -45,15 +45,19 @@ const transportErr: DailyRotateFile = new DailyRotateFile({
       ),
       transports: [transportInfo, transportErr],
     }),
-    TypeOrmModule.forRoot({
-      type: 'oracle',
-      host: 'db12dev.cr7z8fn85oko.eu-central-1.rds.amazonaws.com',
-      port: 1521,
-      username: 'CWASH',
-      password: 'Daster14',
-      sid: 'ORCL',
-      synchronize: true,
-      entities: [],
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'oracle',
+        host: configService.get('DB_HOST'),
+        port: configService.get('DB_PORT'),
+        username: configService.get('DB_USERNAME'),
+        password: configService.get('DB_PASSWORD'),
+        sid: configService.get('DB_SID'),
+        synchronize: false,
+        entities: [],
+      }),
+      inject: [ConfigService],
     }),
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
