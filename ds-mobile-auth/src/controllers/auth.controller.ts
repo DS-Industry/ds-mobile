@@ -11,7 +11,7 @@ import { OtpRequestDto } from '../dto/req/otp-request.dto';
 import { OtpVerificationRequestDto } from '../dto/req/otp-verification-request.dto';
 import { Throttle } from '@nestjs/throttler';
 
-@Controller('auth')
+@Controller()
 @UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
