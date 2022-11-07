@@ -37,7 +37,7 @@
     "express-basic-auth": "^1.2.1",
     "helmet": "^6.0.0",
     "nest-winston": "^1.8.0",
-    "oracledb": "^5.5.0",
+    "oracledb": "https://github.com/oracle/node-oracledb/releases/download/v5.5.0/oracledb-src-5.5.0.tgz",
     "otp-generator": "^4.0.0",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
