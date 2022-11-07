@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  auth-api-ru:
+    container_name: auth-api-ru
+    build: ./ds-mobile-auth
+    restart: unless-stopped
+  core-api:
+    container_name: core-api
+    build: ./ds-mobile-core
+    restart: unless-stopped
+  nginx:
+    image: nginx:stable-alpine
+    container_name: mobile-nginx
