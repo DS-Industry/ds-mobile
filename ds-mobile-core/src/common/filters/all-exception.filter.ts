@@ -10,6 +10,7 @@ import { HttpExceptionResponse } from '../models/http-exception-response.interfa
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { QueryFailedError } from 'typeorm';
 import { Request, Response } from 'express';
+import { AxiosError } from 'axios';
 
 export class AllExceptionFilter implements ExceptionFilter {
   constructor(
@@ -38,6 +39,8 @@ export class AllExceptionFilter implements ExceptionFilter {
       code = 'UnprocessableEntityException';
       message = 'Unable to process request';
       this.logger.error(`[TypeOrm]: ${exception.name}`, exception.stack);
+    } else if (exception instanceof AxiosError) {
+      response.status(503).json(exception.response.data);
     } else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
       code = exception.name;
@@ -51,7 +54,6 @@ export class AllExceptionFilter implements ExceptionFilter {
       code,
       message,
     );
-
 
     response.status(status).json(res);
   }

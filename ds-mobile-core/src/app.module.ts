@@ -12,6 +12,9 @@ import { Card } from './card/model/card.model';
 import { VCardOper } from './common/models/v-card-oper.model';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { EquipmentModule } from './equipment/equipment.module';
+import { HttpModule } from '@nestjs/axios';
+import { EquipmentService } from './equipment/equipment.service';
 
 const transportInfo: DailyRotateFile = new DailyRotateFile({
   dirname: path.join(__dirname, '../logs'),
@@ -69,8 +72,12 @@ const transportErr: DailyRotateFile = new DailyRotateFile({
     CardModule,
     AuthModule,
     PayModule,
+    EquipmentModule,
+    HttpModule,
   ],
   controllers: [],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}
