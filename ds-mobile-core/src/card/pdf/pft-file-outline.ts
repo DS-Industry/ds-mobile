@@ -93,7 +93,7 @@ export function generateHr(doc: PDFKit.PDFDocument, yPadding: number) {
     .stroke();
 }
 
-function formatDate(date: Date) {
+export function formatDate(date: Date) {
   return [
     padTo2Digits(date.getDate()),
     padTo2Digits(date.getMonth() + 1),

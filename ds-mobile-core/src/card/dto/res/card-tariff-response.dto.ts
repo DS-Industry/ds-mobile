@@ -1,3 +1,6 @@
+import { Transform } from 'class-transformer';
+import { formatDate } from 'src/helper/date-format.helper';
+
 export class CardTariffResponse {
   id: number;
   name: string;
@@ -11,7 +14,13 @@ export class CardTariffResponse {
   bonusActivate: number;
   upTypeId: number;
   downTypeId: number;
+  @Transform(({ value }) => formatDate(new Date(value), '-'), {
+    toPlainOnly: true,
+  })
   transferDay: string;
+  @Transform(({ value }) => formatDate(new Date(value), '-'), {
+    toPlainOnly: true,
+  })
   fromDate: string;
   spentSum: number;
   restUpSum: number;
