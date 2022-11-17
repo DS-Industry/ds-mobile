@@ -43,28 +43,41 @@ export function generateTableHeader(doc: PDFKit.PDFDocument, tableTop: number) {
   generateHr(doc, doc.y + 2);
 }
 
-export function generateReportTable(doc: PDFKit.PDFDocument, data: any) {
-  let i,
-    tableTop = 200;
-  doc.font(fontBold);
-  generateTableHeader(doc, tableTop);
-
-  doc.font(font);
-  tableTop = 220;
-  for (i = 0; i < data.length; i++) {
+export function generateTableRows(
+  doc: PDFKit.PDFDocument,
+  data: any,
+  yPosition: number,
+) {
+  let index = 1;
+  for (let i = 0; i < data.length; i++) {
     const item = data[i];
-    const position = tableTop + (i + 1) * 50;
+    if (yPosition > 700) {
+      yPosition = 20;
+      index = 0;
+      doc.addPage();
+    }
     const date = formatDate(item.operDate);
     generateTable(
       doc,
-      position,
+      yPosition,
       date,
       item.operSum,
       item.typeName,
       item.cwName,
       item.devName,
     );
+    yPosition = yPosition + 30;
+    index++;
   }
+}
+
+export function generateReportTable(doc: PDFKit.PDFDocument, data: any) {
+  const tableTop = 150;
+
+  doc.font(fontBold);
+  generateTableHeader(doc, tableTop);
+  doc.font(font);
+  generateTableRows(doc, data, tableTop + 70);
 }
 export function generateTable(
   doc: PDFKit.PDFDocument,

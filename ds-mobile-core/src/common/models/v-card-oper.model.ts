@@ -1,5 +1,6 @@
 import { ViewColumn, ViewEntity } from 'typeorm';
-import { Exclude } from 'class-transformer';
+import {Exclude, Transform} from 'class-transformer';
+import {formatDate} from "../../helper/date-format.helper";
 
 @ViewEntity({
   expression: `select * from V_MAIN_CARD_OPER`,
@@ -21,6 +22,9 @@ export class VCardOper {
   nomer: string;
 
   @ViewColumn({ name: 'OPER_DATE' })
+  @Transform(({ value }) => formatDate(new Date(value), '-'), {
+    toPlainOnly: true,
+  })
   operDate: Date;
 
   @ViewColumn({ name: 'OPER_COMMENT' })

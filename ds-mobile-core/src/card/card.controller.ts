@@ -81,7 +81,10 @@ export class CardController {
 
   @Get('/tariff')
   @HttpCode(200)
-  public async getCardTariff(@RequestHeader(CardHeader) headers: any, @Query() query: CardBalanceRequest) {
+  public async getCardTariff(
+    @RequestHeader(CardHeader) headers: any,
+    @Query() query: CardBalanceRequest,
+  ) {
     const { accessToken } = headers;
     const { card } = query;
     await this.authService.verifyAccessToken(card, accessToken);

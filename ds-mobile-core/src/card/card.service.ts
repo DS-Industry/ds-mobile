@@ -5,7 +5,6 @@ import * as oracledb from 'oracledb';
 import { CardBalanceResponse } from './dto/res/card-balance-response.dto';
 import { CardTariffResponse } from './dto/res/card-tariff-response.dto';
 import { VCardOper } from '../common/models/v-card-oper.model';
-import { CardOpersResponseDto } from './dto/res/card-opers-response.dto';
 import { PaginationsOptionsInterface } from '../common/paginate/paginations-options.interface';
 import * as PDFDocument from 'pdfkit';
 import {
@@ -37,7 +36,6 @@ export class CardService {
     options: PaginationsOptionsInterface,
     card: string,
   ) {
-    const cardOpersResponse: CardOpersResponseDto = new CardOpersResponseDto();
     const [result, total] = await this.vCardRepository.findAndCount({
       where: { devNomer: card },
       order: { operDate: 'DESC' },
@@ -77,9 +75,13 @@ export class CardService {
   private async generatePdfReport(data: any, clientInfo: any) {
     const pdfBuffer: Buffer = await new Promise((resolve) => {
       const doc = new PDFDocument({
-        size: 'LETTER',
-        bufferPages: true,
+        size: 'A4',
       });
+
+      const table = {
+        headers: ['Дата', 'Сумма', 'Тип', 'Автомойка', 'Пост'],
+        rows: data,
+      };
 
       generateTitle(doc, 'Детализация');
       generateCustomerInfo(doc, clientInfo);
