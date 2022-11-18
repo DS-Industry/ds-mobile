@@ -14,6 +14,7 @@ export class PayService {
   ): Promise<AddPaymentResponse> {
     const addPaymentResponse: AddPaymentResponse = new AddPaymentResponse();
     const addPyamentQuery = `begin :p0 := cwash.PAY_OPER_PKG.add_oper_open(:p1, :p2, :p3, :p4, :p5, :p6); end;`;
+    const date = new Date(addPaymentRequest.date);
 
     const runAddPyamentQuery = await this.dataSource.query(addPyamentQuery, [
       { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
@@ -22,7 +23,7 @@ export class PayService {
       addPaymentRequest.phone,
       addPaymentRequest.operSum,
       addPaymentRequest.extId,
-      addPaymentRequest.date,
+      date,
     ]);
 
     addPaymentResponse.id = runAddPyamentQuery[0];
