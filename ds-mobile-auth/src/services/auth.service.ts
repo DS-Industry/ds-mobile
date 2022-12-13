@@ -16,6 +16,9 @@ import { AuthentificationException } from '../common/exceptions/authentification
 import { AddOtpResponseDto } from '../dto/res/add-otp-response.dto';
 import { BeelineService } from '../beeline/beeline.service';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { AuthorizedWebClientResponse } from '../dto/res/authorized-web-client-response.dto';
+import { WebActivateRequest } from '../dto/req/web-activate-request.dto';
+import { WebActivateResponse } from '../dto/res/web-activate-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -57,6 +60,92 @@ export class AuthService {
   }
 
   /**
+   * Sign Up function for new clients
+   * Checking if client exists if not proceed to registration
+   * Validate OTP -> Register new client -> generate API Key*
+   * @param authRequest
+   */
+  public async signUp(authRequest: OtpVerificationRequestDto) {
+    const clientResponse: SuccessClietAuthDto = new SuccessClietAuthDto();
+    const client: VerifyClientRepsonseDto = await this.checkExistingClient(
+      authRequest.phone,
+    );
+
+    const { clientId, cardId } = client;
+
+    if (clientId && cardId) {
+      throw new AuthHttpException(['User with this phone already exists']);
+    }
+
+    const isValidOtp: boolean = await this.verifyOtp(
+      authRequest.phone,
+      authRequest.otp,
+    );
+
+    if (!isValidOtp) throw new AuthHttpException([`Invalid otp request`]);
+
+    //If otp verification successful, try to register new client
+    try {
+      const authorizedClient: AuthorizedClientResponseDto =
+        await this.registerClient(authRequest.phone);
+
+      const apiKey: ApiKeyResponseDto = await this.assignClientApiKey(
+        authorizedClient.clientId,
+      );
+
+      if (!apiKey.keyId)
+        throw new AuthentificationException([`Internal authentication error`]);
+
+      this.logger.log(`Success user registration PHONE: ${authRequest.phone}`);
+      return Object.assign(clientResponse, authorizedClient, apiKey);
+    } catch (e) {
+      throw new AuthHttpException(['Failed to register new client']);
+    }
+  }
+
+  /**
+   * Sign in existing client
+   * Check if client exists -> if not throw error
+   * -> Verify otp -> Sign in client -> generate API Key
+   * @param authRequest
+   */
+  public async signIn(authRequest: OtpVerificationRequestDto) {
+    const clientResponse: SuccessClietAuthDto = new SuccessClietAuthDto();
+    const client: VerifyClientRepsonseDto = await this.checkExistingClient(
+      authRequest.phone,
+    );
+
+    const { clientId, cardId } = client;
+
+    if (!clientId && !cardId) {
+      throw new AuthHttpException(['User with phone does not exists']);
+    }
+
+    const isValidOtp: boolean = await this.verifyOtp(
+      authRequest.phone,
+      authRequest.otp,
+    );
+
+    if (!isValidOtp) throw new AuthHttpException([`Invalid otp request`]);
+
+    //If opt verification is successful rub sign up
+    try {
+      const authorizedClient: AuthorizedClientResponseDto =
+        await this.signInClient(clientId, cardId);
+      const apiKey: ApiKeyResponseDto = await this.assignClientApiKey(
+        authorizedClient.clientId,
+      );
+
+      if (!apiKey.keyId)
+        throw new AuthentificationException([`Internal authentication error`]);
+
+      return Object.assign(clientResponse, authorizedClient, apiKey);
+    } catch (e) {
+      throw new AuthHttpException(['Failed to sign in a client']);
+    }
+  }
+
+  /**
    * Add generated otp to the database
    * @param otp
    * @param phone
@@ -82,6 +171,7 @@ export class AuthService {
    * @param otp
    * @private
    */
+  /*
   public async validateOtp(otpVerificationRequest: OtpVerificationRequestDto) {
     const { phone, otp } = otpVerificationRequest;
     const clientResponse: SuccessClietAuthDto = new SuccessClietAuthDto();
@@ -89,12 +179,13 @@ export class AuthService {
     let authorizedClient: AuthorizedClientResponseDto;
 
     // 1) Verify otp through PL/SQL
-    /*
+
+    !!!Need to comment this
     const [isValidOtp, client] = await Promise.all([
       this.verifyOtp(phone, otp),
       this.checkExistingClient(phone),
     ]);
-    */
+
 
     const isValidOtp: boolean = await this.verifyOtp(phone, otp);
 
@@ -129,6 +220,64 @@ export class AuthService {
 
     this.logger.log(debugMessage);
     return Object.assign(clientResponse, authorizedClient, apiKey);
+  }
+  */
+
+  /**
+   * Validate otp and sign in web client
+   * @param otpVerificationRequest
+   */
+  public async webLogin(otpVerificationRequest: OtpVerificationRequestDto) {
+    const { phone, otp } = otpVerificationRequest;
+
+    const isValidOtp: boolean = await this.verifyOtp(phone, otp);
+
+    if (!isValidOtp) throw new AuthHttpException([`Invalid otp request`]);
+
+    const client: VerifyClientRepsonseDto = await this.checkExistingClient(
+      phone,
+    );
+
+    const { clientId, cardId } = client;
+
+    if (!clientId && cardId) {
+      throw new AuthentificationException([
+        `Client with phone ${phone} does not exists `,
+      ]);
+    }
+
+    const authorizedClient: AuthorizedWebClientResponse =
+      await this.signInWebClient(clientId, cardId);
+
+    return authorizedClient;
+  }
+
+  public async webActivate(webActivateRequest: WebActivateRequest) {
+    const isValidOtp: boolean = await this.verifyOtp(
+      webActivateRequest.phone,
+      webActivateRequest.otp,
+    );
+
+    const webActivateResponse: WebActivateResponse = new WebActivateResponse();
+    if (!isValidOtp) throw new AuthHttpException([`Invalid otp request`]);
+
+    const webActivateQuery = `begin :p0 := card_client_pkg.update_info_by_nomer_json_open(:p1, :p2, :p3, :p4, :p5, :p6, :p7, :p8, :p9, :p10); end;`;
+
+    const runWebActivate = await this.dataSource.query(webActivateQuery, [
+      { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 2000 },
+      webActivateRequest.nomer,
+      webActivateRequest.name,
+      webActivateRequest.avto,
+      webActivateRequest.email,
+      webActivateRequest.phone,
+      webActivateRequest.birthday,
+      webActivateRequest.gender,
+      webActivateRequest.is_locked,
+      null,
+      null,
+    ]);
+
+    return Object.assign(webActivateResponse, JSON.parse(runWebActivate[0]));
   }
 
   /**
@@ -168,6 +317,27 @@ export class AuthService {
       cardId,
     ]);
     return Object.assign(clientDto, JSON.parse(runSignUp[0]));
+  }
+
+  /**
+   * Sign in web client
+   * @param clientId
+   * @param cardId
+   * @private
+   */
+  private async signInWebClient(
+    clientId: number,
+    cardId: number,
+  ): Promise<AuthorizedWebClientResponse> {
+    const clientDto: AuthorizedWebClientResponse =
+      new AuthorizedWebClientResponse();
+    const authorizedWebClientQuery = `begin :p0 := ds_mobile_pkg.sign_in_web_client(:p1, :p2); end;`;
+    const runWebSignIn = await this.dataSource.query(authorizedWebClientQuery, [
+      { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 2000 },
+      clientId,
+      cardId,
+    ]);
+    return Object.assign(clientDto, JSON.parse(runWebSignIn[0]));
   }
 
   /**

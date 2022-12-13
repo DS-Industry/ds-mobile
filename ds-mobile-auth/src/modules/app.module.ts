@@ -13,6 +13,8 @@ import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import * as path from 'path';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
+import { Logtail } from '@logtail/node';
+import { LogtailTransport } from '@logtail/winston';
 
 const transportInfo: DailyRotateFile = new DailyRotateFile({
   dirname: path.join(__dirname, '../../logs'),
@@ -38,12 +40,18 @@ const transportErr: DailyRotateFile = new DailyRotateFile({
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`,
     }),
-    WinstonModule.forRoot({
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json(),
-      ),
-      transports: [transportInfo, transportErr],
+    WinstonModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        format: winston.format.combine(
+          winston.format.timestamp(),
+          winston.format.json(),
+        ),
+        transports: [
+          new LogtailTransport(new Logtail(configService.get('LOGTAIL_TOKEN'))),
+        ],
+      }),
+      inject: [ConfigService],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

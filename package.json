@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@logtail/node": "^0.1.14",
+    "@logtail/winston": "^0.1.14",
     "pdfkit-table": "^0.1.99"
   }
 }

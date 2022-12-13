@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsString, Matches } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+} from 'class-validator';
 
 export class AuthRequestDto {
   @IsString()
@@ -7,4 +13,5 @@ export class AuthRequestDto {
     message: 'Phone number must be valid',
   })
   phone: string;
+
 }

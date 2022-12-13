@@ -25,7 +25,6 @@ export class AuthService {
       token_id,
       refresh_token,
     );
-
     if (!tokens) throw new Error('Ошибка получениф текена доступа');
 
     return tokens;
@@ -84,9 +83,7 @@ export class AuthService {
   ): Promise<AccessTokenResponseDto> {
     const accessTokenResponse: AccessTokenResponseDto =
       new AccessTokenResponseDto();
-
     const generateAccessTokenQuery = `begin :p0 := ds_mobile_pkg.generate_access_token(:p1, :p2); end;`;
-    const start = new Date().getTime();
     const runGenerateAccessToken = await this.dataSource.query(
       generateAccessTokenQuery,
       [
@@ -95,8 +92,6 @@ export class AuthService {
         refreshToken,
       ],
     );
-    const end: any = new Date().getTime() - start;
-
     return Object.assign(
       accessTokenResponse,
       JSON.parse(runGenerateAccessToken[0]),

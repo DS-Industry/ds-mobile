@@ -1,6 +1,9 @@
 import {
+  IsBoolean,
   IsNotEmpty,
   IsNumberString,
+  IsOptional,
+  IsString,
   Length,
   Matches,
   MaxLength,
@@ -18,4 +21,12 @@ export class OtpVerificationRequestDto {
   @MinLength(6, { message: 'Otp must be valid' })
   @MaxLength(6, { message: 'Otp must be valid' })
   otp: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isTermsAccepted?: boolean;
+
+  @IsOptional()
+  @IsString()
+  promoCode?: string;
 }

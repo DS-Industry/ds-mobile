@@ -30,17 +30,33 @@ export class AllExceptionFilter implements ExceptionFilter {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       message = exception.getResponse().message || exception.message;
-      this.logger.error(`[HTTP]: ${code}`, exception.stack);
+      this.logger.error(
+        `[${request.url}]: ${code}:${message}  Body: ${JSON.stringify(
+          request.body,
+        )}`,
+        exception.stack,
+        request.headers,
+      );
     } else if (exception instanceof QueryFailedError) {
       status = HttpStatus.UNPROCESSABLE_ENTITY;
       code = 'UnprocessableEntityException';
       message = 'Unable to process request';
-      this.logger.error(`[TypeOrm]: ${exception.name}`, exception.stack);
+      this.logger.error(
+        `[TypeOrm]: ${exception.name} Body: ${JSON.stringify(request.body)}`,
+        exception.stack,
+        request.headers,
+      );
     } else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
       code = exception.name;
       message = 'Internal Server Error';
-      this.logger.error(`[SERVER]: ${exception.name}`, exception.stack);
+      this.logger.error(
+        `[${request.url}]: ${code}:${message}  Body: ${JSON.stringify(
+          request.body,
+        )}`,
+        exception.stack,
+        request.headers,
+      );
     }
 
     const res: CustomHttpExceptionResponse = this.getErrorResponse(
