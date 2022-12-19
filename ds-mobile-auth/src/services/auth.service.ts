@@ -123,7 +123,7 @@ export class AuthService {
     const { clientId, cardId } = client;
 
     if (!clientId && !cardId) {
-      throw new AuthHttpException(['User with phone does not exists']);
+      throw new UnauthorizedException(['User with phone does not exists']);
     }
 
     const isValidOtp: boolean = await this.verifyOtp(
