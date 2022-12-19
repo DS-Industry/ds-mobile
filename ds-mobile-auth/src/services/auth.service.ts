@@ -1,4 +1,9 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  LoggerService,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthRequestDto } from '../dto/req/authentification-request.dto';
 import * as otpGenerator from 'otp-generator';
 import * as oracledb from 'oracledb';
@@ -74,7 +79,7 @@ export class AuthService {
     const { clientId, cardId } = client;
 
     if (clientId && cardId) {
-      throw new AuthHttpException(['User with this phone already exists']);
+      throw new UnauthorizedException(['User with this phone already exists']);
     }
 
     const isValidOtp: boolean = await this.verifyOtp(

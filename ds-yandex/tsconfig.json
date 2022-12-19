@@ -16,6 +16,16 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@/*": ["src/*"],
+      "@exceptions": ["src/common/exceptions/*"],
+      "@filters": ["src/common/filters/*"],
+      "@carwash": ["src/carwash/*"],
+      "@core": ["src/core/*"],
+      "@ds-cloud": ["src/ds-cloud/*"],
+      "@order": ["src/order/*"],
+      "@yandex": ["src/yandex/*"]
+    }
   }
 }

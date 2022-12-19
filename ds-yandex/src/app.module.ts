@@ -10,6 +10,9 @@ import { CoreModule } from './core/core.module';
 import { CarwashModule } from './carwash/carwash.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Carwash } from './carwash/entity';
+import { BullModule } from '@nestjs/bull';
+import { OrderModule } from './order/order.module';
+import { YaOrder } from '@/carwash/entity/ya-order.entity';
 
 @Module({
   imports: [
@@ -26,8 +29,19 @@ import { Carwash } from './carwash/entity';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         sid: configService.get('DB_SID'),
+        autoLoadEntities: true,
         synchronize: false,
-        entities: [Carwash],
+        entities: [YaOrder],
+      }),
+      inject: [ConfigService],
+    }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        redis: {
+          host: configService.get<string>('REDIS_HOST'),
+          port: configService.get<number>('REDIS_PORT'),
+        },
       }),
       inject: [ConfigService],
     }),
@@ -35,6 +49,7 @@ import { Carwash } from './carwash/entity';
     DsCloudModule,
     CoreModule,
     CarwashModule,
+    OrderModule,
   ],
   controllers: [],
   providers: [],

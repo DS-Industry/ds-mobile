@@ -17,20 +17,22 @@ export class AllExceptionFilter implements ExceptionFilter {
     let message;
     let code;
     let status;
+    let res;
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       message = exception.getResponse().message || exception.message;
+      res = this.getExceptionResponse(status, message, request);
     } else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
       code = exception.name;
       message = 'Internal Server Error';
+      res = this.getExceptionResponse(status, message, request);
     }
-    console.log(exception);
-    const res = this.getExceptionResponse(status, message, request);
 
+    console.log(exception);
     response.status(status).send(res);
   }
 
