@@ -21,6 +21,7 @@
       "@/*": ["src/*"],
       "@exceptions": ["src/common/exceptions/*"],
       "@filters": ["src/common/filters/*"],
+      "@utils": ["src/common/utils/*"],
       "@carwash": ["src/carwash/*"],
       "@core": ["src/core/*"],
       "@ds-cloud": ["src/ds-cloud/*"],

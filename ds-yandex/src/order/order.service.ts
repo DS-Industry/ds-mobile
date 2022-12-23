@@ -6,7 +6,8 @@ import { DsCloudService } from '@/ds-cloud/ds-cloud.service';
 import { CreateOrderRequest } from '@/core/dto/req/create-order-request.dto';
 import { YaOrder } from '@/carwash/entity/ya-order.entity';
 import { OrderExcecutionStatus, OrderStatus, SendStatus } from '@/common/enums';
-
+import { YandexService } from '@/yandex/yandex.service';
+import { queuePool } from "@/bull-admin/bull-board-queue";
 
 @Injectable()
 export class OrderService {
@@ -14,7 +15,10 @@ export class OrderService {
     @InjectQueue('order-process-queue') private orderQueue: Queue,
     private carwashService: CarwashService,
     private dscloudService: DsCloudService,
-  ) {}
+    private yandexService: YandexService,
+  ) {
+    queuePool.add(this.orderQueue);
+  }
 
   async processOrder(orderRequest: CreateOrderRequest) {
     let newOrder: YaOrder;
@@ -27,16 +31,22 @@ export class OrderService {
       await this.carwashService.updateOrderStatus(
         newOrder.id,
         OrderStatus.ORDERCREATED,
+        null,
+        SendStatus.NO,
       );
-      //TODO
-      //1. Send order status to Yandex
-      //2. Send order update to db after Yandex request
-      //3. If error update stats to error
-      //4. If error occurs end job
+      await this.yandexService.accept(newOrder.externalId);
+      await this.carwashService.updateOrderStatus(
+        newOrder.id,
+        OrderStatus.ORDERCREATED,
+        null,
+        SendStatus.YES,
+      );
     } catch (e) {
       // Add Logger message
-      console.log(e);
-      await this.carwashService.setExecutionalError(newOrder.id, e.messsage);
+      await this.carwashService.setExecutionalError(
+        newOrder.id,
+        e.options.reason,
+      );
       return;
     }
 
@@ -47,15 +57,7 @@ export class OrderService {
         newOrder.cmnDeviceId,
         newOrder.orderSum,
       );
-
-      //TODO
-      //1. Send order status to Yandex
-      //2. Send order update to db after Yandex request
-      //3. If error update stats to error
-      //4. If error occurs update Yandex on error
-      //5. If error occurs end job
     } catch (e) {
-      console.log(e);
       try {
         await this.carwashService.updateOrderStatus(
           newOrder.id,
@@ -63,16 +65,28 @@ export class OrderService {
           null,
           SendStatus.NO,
           null,
-          e.message,
+          e.response.error,
           OrderExcecutionStatus.ERROR,
         );
-
         //Send Yandex status
+        await this.yandexService.canceled(
+          newOrder.externalId,
+          e.response.error,
+        );
         //Update Order after Yandex status update
+        await this.carwashService.updateOrderStatus(
+          newOrder.id,
+          OrderStatus.CARWASHCANCELED,
+          null,
+          SendStatus.YES,
+          new Date(Date.now()),
+        );
         return;
       } catch (e) {
-        console.log(e);
-        await this.carwashService.setExecutionalError(newOrder.id, e.message);
+        await this.carwashService.setExecutionalError(
+          newOrder.id,
+          e.options.reason,
+        );
         return;
       }
     }
@@ -86,14 +100,25 @@ export class OrderService {
         SendStatus.NO,
       );
 
-      //TODO
-      //1. Send order status to Yandex
-      //2. Send order update to db after Yandex request
-      //3. If error update stats to error
-      //4. If error occurs end job
+      await this.yandexService.completed(
+        newOrder.externalId,
+        newOrder.orderSum,
+        newOrder.id,
+        chargeTime,
+      );
+      await this.carwashService.updateOrderStatus(
+        newOrder.id,
+        OrderStatus.COMPLETED,
+        null,
+        SendStatus.YES,
+        new Date(Date.now()),
+        OrderExcecutionStatus.COMPLETED,
+      );
     } catch (e) {
-      console.log(e);
-      await this.carwashService.setExecutionalError(newOrder.id, e.message);
+      await this.carwashService.setExecutionalError(
+        newOrder.id,
+        e.options.reason,
+      );
     }
   }
 

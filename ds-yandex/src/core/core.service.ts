@@ -12,7 +12,7 @@ import { PingException } from '@/common/exceptions';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { CreateOrderRequest } from '@/core/dto/req/create-order-request.dto';
-import { OrderService } from "@/order/order.service";
+import { OrderService } from '@/order/order.service';
 
 @Injectable()
 export class CoreService {
@@ -57,7 +57,7 @@ export class CoreService {
     return await this.dsCloudService.getCarWashList();
   }
 
-  public async test(){
+  public async test() {
     return this.orderService.testFunction();
   }
 

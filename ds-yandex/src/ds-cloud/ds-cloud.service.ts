@@ -48,7 +48,6 @@ export class DsCloudService {
           }),
         );
     } catch (e) {
-      console.log(e);
       throw new HttpException(
         `Error getting data`,
         HttpStatus.SERVICE_UNAVAILABLE,
@@ -77,7 +76,6 @@ export class DsCloudService {
         
        */
     } catch (e) {
-      console.log(e);
       throw new HttpException(
         `Error getting data`,
         HttpStatus.SERVICE_UNAVAILABLE,
@@ -104,10 +102,9 @@ export class DsCloudService {
       return response.status;
     } catch (e) {
       const response: StartEquipmentErrorRes = e.response.data;
-      throw new BayUnavailableException(
-        response.errorMessage,
-        response.statusCode,
-      );
+      throw new BayUnavailableException(response, response.statusCode, {
+        reason: e.stack,
+      });
     }
   }
 

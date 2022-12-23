@@ -14,25 +14,8 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { EquipmentModule } from './equipment/equipment.module';
 import { HttpModule } from '@nestjs/axios';
-import { EquipmentService } from './equipment/equipment.service';
-
-const transportInfo: DailyRotateFile = new DailyRotateFile({
-  dirname: path.join(__dirname, '../logs'),
-  filename: 'info.log',
-  zippedArchive: true,
-  level: 'info',
-  maxSize: '30m',
-  maxFiles: '7d',
-});
-
-const transportErr: DailyRotateFile = new DailyRotateFile({
-  dirname: path.join(__dirname, '../logs'),
-  filename: 'error.log',
-  zippedArchive: true,
-  level: 'error',
-  maxSize: '30m',
-  maxFiles: '7d',
-});
+import { Logtail } from '@logtail/node';
+import { LogtailTransport } from '@logtail/winston';
 
 @Module({
   imports: [
@@ -54,12 +37,18 @@ const transportErr: DailyRotateFile = new DailyRotateFile({
       }),
       inject: [ConfigService],
     }),
-    WinstonModule.forRoot({
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json(),
-      ),
-      transports: [transportInfo, transportErr],
+    WinstonModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        format: winston.format.combine(
+          winston.format.timestamp(),
+          winston.format.json(),
+        ),
+        transports: [
+          new LogtailTransport(new Logtail(configService.get('LOGTAIL_TOKEN'))),
+        ],
+      }),
+      inject: [ConfigService],
     }),
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
@@ -76,8 +65,6 @@ const transportErr: DailyRotateFile = new DailyRotateFile({
     HttpModule,
   ],
   controllers: [],
-  providers: [
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
-  ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

@@ -37,14 +37,11 @@ export class AuthService {
    */
   public async verifyApiKey(apiKey: string, card: string): Promise<boolean> {
     const verifyApiKeyQuery = `begin :p0 := ds_mobile_pkg.check_api_key(:p1, :p2); end;`;
-    const start = new Date().getTime();
     const runVerifyApiKey = await this.dataSource.query(verifyApiKeyQuery, [
       { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
       card,
       apiKey,
     ]);
-    const end: any = new Date().getTime() - start;
-    console.log('Api Key check execution time: %dms', end);
     if (runVerifyApiKey[0] <= 0)
       throw new UnauthorizedException('Invalid api key');
 

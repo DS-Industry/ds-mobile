@@ -16,7 +16,7 @@ export class EquipmentController {
 
   @Post('/start/:id')
   @SkipThrottle(true)
-  @UseFilters(new EquipmentExceptionFilter())
+  @UseFilters(EquipmentExceptionFilter)
   public async startEquipment(
     @RequestHeader(CardHeader) headers: any,
     @Body() startEquipmentRequest: StartEquipmentRequest,

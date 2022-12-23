@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from '../controllers/app.controller';
-import { AppService } from '../services/app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from '../controllers/auth.controller';
@@ -11,28 +9,8 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
-import * as path from 'path';
-import * as DailyRotateFile from 'winston-daily-rotate-file';
 import { Logtail } from '@logtail/node';
 import { LogtailTransport } from '@logtail/winston';
-
-const transportInfo: DailyRotateFile = new DailyRotateFile({
-  dirname: path.join(__dirname, '../../logs'),
-  filename: 'info.log',
-  zippedArchive: true,
-  level: 'info',
-  maxSize: '20m',
-  maxFiles: '7d',
-});
-
-const transportErr: DailyRotateFile = new DailyRotateFile({
-  dirname: path.join(__dirname, '../../logs'),
-  filename: 'error.log',
-  zippedArchive: true,
-  level: 'error',
-  maxSize: '20m',
-  maxFiles: '7d',
-});
 
 @Module({
   imports: [
@@ -77,9 +55,8 @@ const transportErr: DailyRotateFile = new DailyRotateFile({
     }),
     HttpModule,
   ],
-  controllers: [AppController, AuthController],
+  controllers: [AuthController],
   providers: [
-    AppService,
     AuthService,
     BeelineService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },

@@ -21,6 +21,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@bull-board/api": "^4.9.0",
+    "@bull-board/express": "^4.9.0",
     "@logtail/node": "^0.1.14",
     "@logtail/winston": "^0.1.14",
     "@nestjs/axios": "^1.0.0",
@@ -39,6 +41,7 @@
     "compression": "^1.7.4",
     "cross-env": "^7.0.3",
     "helmet": "^6.0.0",
+    "moment": "^2.29.4",
     "nest-winston": "^1.8.0",
     "nestjs-typeorm-paginate": "^4.0.2",
     "oracledb": "^5.5.0",
@@ -95,6 +98,7 @@
       "^@/(.*)$": "<rootDir>/../src/$1",
       "^@exceptions/(.*)$": "<rootDir>/../src/common/exceptions/$1",
       "^@filters/(.*)$": "<rootDir>/../src/common/filters/$1",
+      "^@utils/(.*)$": "<rootDir>/../src/common/utils/$1",
       "^@carwash/(.*)$": "<rootDir>/../src/carwash/$1",
       "^@core/(.*)$": "<rootDir>/../src/core/$1",
       "^@ds-cloud/(.*)$": "<rootDir>/../src/ds-cloud/$1",

@@ -19,23 +19,19 @@ export class EquipmentService {
   ): Promise<Observable<any>> {
     const options: any = this.setHeaders();
     const body = startEquipmentReq;
-    try {
-      return this.httpService
-        .post(
-          `${this.configService.get<string>(
-            'DS_CLOUD_URL',
-          )}/external/mobile/write/${deviceId}`,
-          body,
-          options,
-        )
-        .pipe(
-          map((axiosResponse: AxiosResponse) => {
-            return axiosResponse.data;
-          }),
-        );
-    } catch (e) {
-      console.log(e);
-    }
+    return this.httpService
+      .post(
+        `${this.configService.get<string>(
+          'DS_CLOUD_URL',
+        )}/external/mobile/write/${deviceId}`,
+        body,
+        options,
+      )
+      .pipe(
+        map((axiosResponse: AxiosResponse) => {
+          return axiosResponse.data;
+        }),
+      );
   }
 
   private setHeaders(): { headers: { akey: string } } {

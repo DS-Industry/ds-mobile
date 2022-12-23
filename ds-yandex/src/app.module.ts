@@ -13,6 +13,8 @@ import { Carwash } from './carwash/entity';
 import { BullModule } from '@nestjs/bull';
 import { OrderModule } from './order/order.module';
 import { YaOrder } from '@/carwash/entity/ya-order.entity';
+import { AuthModule } from './auth/auth.module';
+import { BullAdminController } from "@/bull-admin/bull-admin.controller";
 
 @Module({
   imports: [
@@ -50,8 +52,9 @@ import { YaOrder } from '@/carwash/entity/ya-order.entity';
     CoreModule,
     CarwashModule,
     OrderModule,
+    AuthModule,
   ],
-  controllers: [],
+  controllers: [BullAdminController],
   providers: [],
 })
 export class AppModule {}

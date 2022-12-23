@@ -4,6 +4,7 @@ import { OrderProcessor } from '@/order/order.processor';
 import { BullModule } from '@nestjs/bull';
 import { CarwashModule } from '@/carwash/carwash.module';
 import { DsCloudModule } from '@/ds-cloud/ds-cloud.module';
+import { YandexModule } from "@/yandex/yandex.module";
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { DsCloudModule } from '@/ds-cloud/ds-cloud.module';
     }),
     CarwashModule,
     DsCloudModule,
+    YandexModule
   ],
   providers: [OrderService, OrderProcessor],
   exports: [OrderService, BullModule],

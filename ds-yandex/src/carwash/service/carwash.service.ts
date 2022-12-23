@@ -14,7 +14,6 @@ export class CarwashService {
   async createOrder(orderRequest: CreateOrderRequest): Promise<YaOrder> {
     const order = new YaOrder();
 
-    console.log(typeof orderRequest.dateCreate);
     order.externalId = orderRequest.id;
     order.boxNumber = parseInt(orderRequest.boxNumber);
     order.cmnCarWashId = parseInt(orderRequest.carWashId);
@@ -35,7 +34,7 @@ export class CarwashService {
   async setExecutionalError(id: number, error: string) {
     await this.repository.update(id, {
       errorExcecution: error,
-      statusExecution: OrderStatus.CARWASHCANCELED,
+      statusExecution: OrderExcecutionStatus.ERROR,
     });
   }
 

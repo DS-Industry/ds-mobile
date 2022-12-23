@@ -21,6 +21,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@logtail/node": "^0.1.14",
+    "@logtail/winston": "^0.1.14",
     "@nestjs/axios": "^1.0.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.2.0",
@@ -38,7 +40,7 @@
     "helmet": "^6.0.0",
     "nest-winston": "^1.8.0",
     "nestjs-typeorm-paginate": "^4.0.2",
-    "oracledb": "https://github.com/oracle/node-oracledb/releases/download/v5.5.0/oracledb-src-5.5.0.tgz",
+    "oracledb": "^5.5.0",
     "passport": "^0.6.0",
     "passport-headerapikey": "^1.2.2",
     "pdfkit": "^0.13.0",
