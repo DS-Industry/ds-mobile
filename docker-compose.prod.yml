@@ -23,6 +23,7 @@ services:
         max-size: "10m"
   ds-mobile-rp:
     container_name: ds-mobile-rp
+    hostname: ds-mobile-rp
     ports:
       - "5050:5050"
     volumes:
