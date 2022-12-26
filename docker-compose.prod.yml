@@ -33,3 +33,4 @@ services:
       options:
         max-file: "5"
         max-size: "10m"
+    restart: unless-stopped
