@@ -9,6 +9,6 @@ services:
     container_name: core-api
     build: ./ds-mobile-core
     restart: unless-stopped
-  nginx:
+  ds-mobile-rp:
     image: nginx:stable-alpine
-    container_name: mobile-nginx
+    container_name: ds-mobile-rp
