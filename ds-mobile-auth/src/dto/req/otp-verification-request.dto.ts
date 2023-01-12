@@ -1,6 +1,7 @@
 import {
   IsBoolean,
   IsNotEmpty,
+  IsNumber,
   IsNumberString,
   IsOptional,
   IsString,
@@ -23,8 +24,8 @@ export class OtpVerificationRequestDto {
   otp: string;
 
   @IsOptional()
-  @IsBoolean()
-  isTermsAccepted?: boolean;
+  @IsNumber()
+  isTermsAccepted?: number;
 
   @IsOptional()
   @IsString()

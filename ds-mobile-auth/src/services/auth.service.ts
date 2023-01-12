@@ -101,7 +101,7 @@ export class AuthService {
       if (!apiKey.keyId)
         throw new AuthentificationException([`Internal authentication error`]);
 
-      this.logger.log(`Success user registration PHONE: ${authRequest.phone}`);
+      this.logger.log(`Success user registration PHONE: ${authRequest.phone} TermsAccepted: ${authRequest.isTermsAccepted}, Promo: ${authRequest.promoCode}`);
       return Object.assign(clientResponse, authorizedClient, apiKey);
     } catch (e) {
       throw new AuthHttpException(['Failed to register new client']);
