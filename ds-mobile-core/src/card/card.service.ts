@@ -152,6 +152,23 @@ LEFT JOIN (SELECT CARD_ID, MAX(DAY_DATE) HIST_DATE
 WHERE c.SEARCH_DEV_NOMER = '${card}') t`;
 
     const runGetCardBalance = await this.dataSource.query(getCardBalanceQuery);
-    return Object.assign(cardTariffResponse, runGetCardBalance[0]);
+    const tariff: CardTariffResponse = Object.assign(
+      cardTariffResponse,
+      runGetCardBalance[0],
+    );
+
+    if (tariff.needUpMoney > tariff.spentSum) {
+      tariff.restUpSum = tariff.needUpMoney - tariff.spentSum;
+    } else {
+      tariff.restUpSum = 0;
+    }
+
+    if (tariff.spentSum < tariff.needDownMoney) {
+      tariff.restDownSum = tariff.needDownMoney - tariff.spentSum;
+    } else {
+      tariff.spentSum = 0;
+    }
+
+    return tariff;
   }
 }
