@@ -91,8 +91,15 @@ export class AuthService {
 
     //If otp verification successful, try to register new client
     try {
+      //Promo code verification and application on registration
+      let promo = null;
+
+      if (authRequest.promoCode.length > 0) {
+        promo = authRequest.promoCode;
+      }
+
       const authorizedClient: AuthorizedClientResponseDto =
-        await this.registerClient(authRequest.phone);
+        await this.registerClient(authRequest.phone, promo);
 
       const apiKey: ApiKeyResponseDto = await this.assignClientApiKey(
         authorizedClient.clientId,
@@ -101,7 +108,9 @@ export class AuthService {
       if (!apiKey.keyId)
         throw new AuthentificationException([`Internal authentication error`]);
 
-      this.logger.log(`Success user registration PHONE: ${authRequest.phone} TermsAccepted: ${authRequest.isTermsAccepted}, Promo: ${authRequest.promoCode}`);
+      this.logger.log(
+        `Success user registration PHONE: ${authRequest.phone} TermsAccepted: ${authRequest.isTermsAccepted}, Promo: ${authRequest.promoCode}`,
+      );
       return Object.assign(clientResponse, authorizedClient, apiKey);
     } catch (e) {
       throw new AuthHttpException(['Failed to register new client']);
@@ -292,13 +301,15 @@ export class AuthService {
    */
   private async registerClient(
     phone: string,
+    promo: string = null,
   ): Promise<AuthorizedClientResponseDto> {
     const clientDto: AuthorizedClientResponseDto =
       new AuthorizedClientResponseDto();
-    const registerClientQuery = `begin :p0 := ds_mobile_pkg.registrate_card(:p1); end;`;
+    const registerClientQuery = `begin :p0 := ds_mobile_pkg.registrate_card(:p1, :p2); end;`;
     const runRegisterClient = await this.dataSource.query(registerClientQuery, [
       { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 2000 },
       phone,
+      promo,
     ]);
     return Object.assign(clientDto, JSON.parse(runRegisterClient[0]));
   }
