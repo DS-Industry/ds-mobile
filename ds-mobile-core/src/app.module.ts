@@ -4,8 +4,6 @@ import { AuthModule } from './auth/auth.module';
 import { PayModule } from './pay/pay.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import * as DailyRotateFile from 'winston-daily-rotate-file';
-import * as path from 'path';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { Card } from './card/model/card.model';
@@ -16,6 +14,8 @@ import { EquipmentModule } from './equipment/equipment.module';
 import { HttpModule } from '@nestjs/axios';
 import { Logtail } from '@logtail/node';
 import { LogtailTransport } from '@logtail/winston';
+import { ClientModule } from './client/client.module';
+import { Client } from './client/model/client.model';
 
 @Module({
   imports: [
@@ -33,7 +33,7 @@ import { LogtailTransport } from '@logtail/winston';
         password: configService.get('DB_PASSWORD'),
         sid: configService.get('DB_SID'),
         synchronize: false,
-        entities: [Card, VCardOper],
+        entities: [Card, VCardOper, Client],
       }),
       inject: [ConfigService],
     }),
@@ -63,6 +63,7 @@ import { LogtailTransport } from '@logtail/winston';
     PayModule,
     EquipmentModule,
     HttpModule,
+    ClientModule,
   ],
   controllers: [],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

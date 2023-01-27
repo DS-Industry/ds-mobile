@@ -13,23 +13,29 @@ import {
   generateTitle,
 } from './pdf/pft-file-outline';
 import { CardOperationsPdfRequestDto } from './dto/req/card-operations-pdf-request.dto';
+import { Card } from './model/card.model';
 
 @Injectable()
 export class CardService {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
+    @InjectRepository(Card) private cardRepository: Repository<Card>,
     @InjectRepository(VCardOper) private vCardRepository: Repository<VCardOper>,
   ) {}
 
-  public async getCardBalance(card: string): Promise<CardBalanceResponse> {
+  public async getCardBalance(
+    cardDevNumber: string,
+  ): Promise<CardBalanceResponse> {
     const cardBalanceResponse: CardBalanceResponse = new CardBalanceResponse();
-    const getCardBalanceQuery = `begin :p0 := ds_mobile_pkg.get_balance(:p1); end;`;
-    const runCardBalance = await this.dataSource.query(getCardBalanceQuery, [
-      { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 2000 },
-      card,
-    ]);
 
-    return Object.assign(cardBalanceResponse, JSON.parse(runCardBalance[0]));
+    const card = await this.cardRepository.findOne({
+      select: ['balance'],
+      where: {
+        devNomer: cardDevNumber,
+      },
+    });
+
+    return Object.assign(cardBalanceResponse, card);
   }
 
   public async getTransactionStatement(

@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-Entity({ name: 'CRDCARD', synchronize: false });
+@Entity({ name: 'CRDCARD', synchronize: false })
 export class Card {
   @PrimaryGeneratedColumn({ type: 'number', name: 'CARD_ID' })
   cardId: number;

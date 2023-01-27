@@ -1,15 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { HeaderAPIKeyStrategy } from 'passport-headerapikey';
+import { AuthService } from '../auth.service';
+import { Strategy } from 'passport-custom';
+import { Request } from 'express';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(
-  HeaderAPIKeyStrategy,
+  Strategy,
   'access-token',
 ) {
-  constructor() {
-    super();
-  }
+  async validate(req: Request): Promise<any> {
+    const accessToken = req.headers['access_token'];
+    const card = req.headers['card'];
 
-  public validateToken() {}
+    if (!accessToken)
+      throw new UnauthorizedException('Access token is missing');
+
+    if (!card) throw new UnauthorizedException('Card number is missing');
+
+
+    try {
+
+    }catch (e){
+
+    }
+  }
 }
