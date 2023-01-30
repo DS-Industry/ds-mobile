@@ -10,5 +10,19 @@ export class ClientService {
     private readonly clientRepository: Repository<Client>,
   ) {}
 
-  async getClientByAccessToken(accessToken: string) {}
+  async getClientByTokenId(tokenId: string) {
+    const client = await this.clientRepository
+      .createQueryBuilder('client')
+      .leftJoinAndSelect('client.cards', 'cards')
+      .where('client.tokenId = :tokenId', { tokenId: tokenId })
+      .select([
+        'client.clientId',
+        'client.correctPhone',
+        'cards.devNomer',
+        'cards.nomer',
+      ])
+      .getOne();
+
+    return client;
+  }
 }

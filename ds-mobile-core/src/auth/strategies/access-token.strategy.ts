@@ -18,11 +18,7 @@ export class AccessTokenStrategy extends PassportStrategy(
 
     if (!card) throw new UnauthorizedException('Card number is missing');
 
-
     try {
-
-    }catch (e){
-
-    }
+    } catch (e) {}
   }
 }

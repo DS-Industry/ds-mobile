@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Client } from '../../client/model/client.model';
 
 @Entity({ name: 'CRDCARD', synchronize: false })
 export class Card {
@@ -17,8 +24,9 @@ export class Card {
   @Column({ type: 'date', name: 'DATE_END', nullable: true })
   dateEnd: Date;
 
-  @Column({ type: 'number', name: 'CLIENT_ID', nullable: true })
-  clientId: number;
+  @ManyToOne(() => Client, (client: Client) => client.cards)
+  @JoinColumn({ name: 'CLIENT_ID' })
+  client: Client;
 
   @Column({ type: 'number', name: 'CARD_TYPE_ID' })
   cardTypeId: number;

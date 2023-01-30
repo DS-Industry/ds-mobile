@@ -8,10 +8,19 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import * as oracledb from 'oracledb';
 import { AccessTokenResponseDto } from './dto/res/access-token-response.dto';
+import { ClientService } from '../client/client.service';
+import { JwtService } from '@nestjs/jwt';
+import { IPayloadJwt } from './interface/payload.interface';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    private readonly clientService: ClientService,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
 
   /**
    * Get access token fot the api through database
@@ -66,6 +75,23 @@ export class AuthService {
       throw new UnauthorizedException('Invalid access token');
 
     return true;
+  }
+
+  public async getClientByTokenId(tokenId: string) {
+    return await this.clientService.getClientByTokenId(tokenId);
+  }
+
+  public async signToken(payload: IPayloadJwt) {
+    const accessTokenResponse: AccessTokenResponseDto =
+      new AccessTokenResponseDto();
+    const token = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+      expiresIn: this.configService.get<string>('JWT_EXPIRATION_TIME'),
+    });
+
+    accessTokenResponse.access_token = token;
+
+    return accessTokenResponse;
   }
 
   /**
