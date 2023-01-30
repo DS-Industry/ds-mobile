@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { CardModule } from './card/card.module';
 import { AuthModule } from './auth/auth.module';
 import { PayModule } from './pay/pay.module';
@@ -16,12 +16,20 @@ import { Logtail } from '@logtail/node';
 import { LogtailTransport } from '@logtail/winston';
 import { ClientModule } from './client/client.module';
 import { Client } from './client/model/client.model';
+import { AutomapperModule } from '@automapper/nestjs';
+import { classes } from '@automapper/classes';
+import { Apikey } from './client/model/apikey.model';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`,
+    }),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 2000,
+      max: 300,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -33,7 +41,7 @@ import { Client } from './client/model/client.model';
         password: configService.get('DB_PASSWORD'),
         sid: configService.get('DB_SID'),
         synchronize: false,
-        entities: [Card, VCardOper, Client],
+        entities: [Card, VCardOper, Client, Apikey],
       }),
       inject: [ConfigService],
     }),

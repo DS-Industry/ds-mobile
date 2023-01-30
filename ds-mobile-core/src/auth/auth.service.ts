@@ -12,6 +12,8 @@ import { ClientService } from '../client/client.service';
 import { JwtService } from '@nestjs/jwt';
 import { IPayloadJwt } from './interface/payload.interface';
 import { ConfigService } from '@nestjs/config';
+import { GetClientByTokensResponseDto } from '../client/dto/res/get-client-by-tokens-response.dto';
+import * as moment from 'moment';
 
 @Injectable()
 export class AuthService {
@@ -44,7 +46,9 @@ export class AuthService {
    * @param apiKey
    * @param card
    */
-  public async verifyApiKey(apiKey: string, card: string): Promise<boolean> {
+  public async verifyApiKey(apiKey: string, card: string): Promise<unknown> {
+    const client = await this.clientService.getClientByApiKey(apiKey);
+    /*
     const verifyApiKeyQuery = `begin :p0 := ds_mobile_pkg.check_api_key(:p1, :p2); end;`;
     const runVerifyApiKey = await this.dataSource.query(verifyApiKeyQuery, [
       { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
@@ -53,8 +57,8 @@ export class AuthService {
     ]);
     if (runVerifyApiKey[0] <= 0)
       throw new UnauthorizedException('Invalid api key');
-
-    return true;
+  */
+    return client;
   }
 
   /**
@@ -77,7 +81,9 @@ export class AuthService {
     return true;
   }
 
-  public async getClientByTokenId(tokenId: string) {
+  public async getClientByTokenId(
+    tokenId: string,
+  ): Promise<GetClientByTokensResponseDto> {
     return await this.clientService.getClientByTokenId(tokenId);
   }
 
@@ -90,6 +96,9 @@ export class AuthService {
     });
 
     accessTokenResponse.access_token = token;
+    accessTokenResponse.expire_date = moment(new Date(Date.now()))
+      .add(2, 'h')
+      .toISOString();
 
     return accessTokenResponse;
   }

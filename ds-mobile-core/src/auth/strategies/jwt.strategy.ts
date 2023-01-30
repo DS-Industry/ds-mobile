@@ -25,6 +25,6 @@ export class JwtStrategy extends PassportStrategy(
     const { tokenId, card } = payload;
     const client = await this.authService.getClientByTokenId(tokenId);
 
-    return client[0];
+    return client;
   }
 }

@@ -1,9 +1,10 @@
-import { Body, Controller, Post, Headers } from '@nestjs/common';
+import { Body, Controller, Post, Headers, UseGuards } from '@nestjs/common';
 import { PayService } from './pay.service';
 import { AddPaymentRequestDto } from './dto/req/add-payment-request.dto';
 import { AuthService } from '../auth/auth.service';
 import { RequestHeader } from '../common/decorators/request-header.decorator';
 import { CardPayHeaderDto } from './dto/req/card-pay-header.dto';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 
 @Controller('pay')
 export class PayController {
@@ -13,11 +14,8 @@ export class PayController {
   ) {}
 
   @Post('add')
-  public async addPayment(
-    @Body() addPaymentRequest: AddPaymentRequestDto,
-    @RequestHeader(CardPayHeaderDto) headers: any,
-  ) {
-    await this.authService.verifyAccessToken(headers.card, headers.accessToken);
+  @UseGuards(JwtAuthGuard)
+  public async addPayment(@Body() addPaymentRequest: AddPaymentRequestDto) {
     return this.payService.addPayment(addPaymentRequest);
   }
 }

@@ -1,29 +1,23 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GetAccessTokenRequest } from './dto/req/get-access-token-request.dto';
-import { ClientService } from '../client/client.service';
+import { IPayloadJwt } from './interface/payload.interface';
+import { ApiKeyGuard } from './guard/api-key.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly clientService: ClientService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('/access-token')
+  @UseGuards(ApiKeyGuard)
   public async getAccessToken(
     @Body() getAccessTokenRequest: GetAccessTokenRequest,
     @Req() req,
   ) {
-    const apiKey = req.headers['x-api-key'];
-    await this.authService.verifyApiKey(apiKey, getAccessTokenRequest.card);
-    return this.authService.getAccessToken(getAccessTokenRequest);
-  }
-
-  @Get('/client')
-  public async getClient(@Req() req) {
-    const tokenId = req.headers['token-id'];
-    const refreshToken = req.headers['refresh-token'];
-    return await this.clientService.getClientByTokenId(tokenId);
+    const payload: IPayloadJwt = {
+      tokenId: getAccessTokenRequest.token_id,
+      card: getAccessTokenRequest.card,
+    };
+    return this.authService.signToken(payload);
   }
 }
