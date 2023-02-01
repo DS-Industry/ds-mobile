@@ -11,8 +11,8 @@ services:
     env_file: ./ds-mobile-core/.env.development
     volumes:
       - ./ds-mobile-core/src:/usr/app/src
-  nginx:
+  ds-mobile-rp:
     ports:
-      - "5050:5050"
+      - "5000:5000"
     volumes:
       - ./nginx/default.conf.dev:/etc/nginx/conf.d/default.conf

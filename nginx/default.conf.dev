@@ -1,5 +1,5 @@
 server {
-    listen 5051;
+    listen 5000;
 
     location /auth {
         proxy_set_header X-Real-IP $remote_addr;
