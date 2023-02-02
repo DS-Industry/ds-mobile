@@ -1,10 +1,13 @@
-import {Injectable, UseFilters} from '@nestjs/common';
+import { Injectable, UseFilters } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { ExistingSessionDto } from '../dto/res/existing-session.dto';
 import { AxiosResponse } from 'axios';
 import { firstValueFrom } from 'rxjs';
 import { GazpromException } from '../../common/exceptions/gazprom.exception';
+import { GazpromClientDto } from '../dto/req/gazprom-client.dto';
+import { RegistrationSessionDto } from '../dto/req/registration-session.dto';
+import { clear } from 'winston';
 
 @UseFilters()
 @Injectable()
@@ -43,7 +46,28 @@ export class GazpormService {
     return response;
   }
 
-  public async createRegistrationSession(client: any) {}
+  public async createRegistrationSession(client: GazpromClientDto) {
+    const config = this.setHeaders();
+    let response: any;
+    const body: RegistrationSessionDto = {
+      phone_number: client.phone,
+      partner_user_id: '12345',
+    };
+    try {
+      const request: AxiosResponse = await firstValueFrom(
+        this.httpService.post(
+          `${this.baseUrl}/v1/partners/${this.partnerId}/register/client`,
+          body,
+          config,
+        ),
+      );
+      response = request.data;
+    } catch (e) {
+      throw new GazpromException(res.statusCode, res.statusMessage);
+    }
+
+    return response;
+  }
 
   public async getSubscriptionStatus(clientId: string) {}
 
