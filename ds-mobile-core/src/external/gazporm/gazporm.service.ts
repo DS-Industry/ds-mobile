@@ -7,9 +7,11 @@ import { firstValueFrom } from 'rxjs';
 import { GazpromException } from '../../common/exceptions/gazprom.exception';
 import { GazpromClientDto } from '../dto/req/gazprom-client.dto';
 import { RegistrationSessionDto } from '../dto/req/registration-session.dto';
-import { clear } from 'winston';
+import { GazpromExceptionFilter } from '../../common/filters/gazprom-exception.filter';
+import { SubscribtionStatusDto } from '../dto/res/subscribtion-status.dto';
+import { GazpormErrorDto } from '../dto/res/gazporm-error.dto';
 
-@UseFilters()
+@UseFilters(GazpromExceptionFilter)
 @Injectable()
 export class GazpormService {
   private apiKey: string;
@@ -24,35 +26,40 @@ export class GazpormService {
     this.partnerId = configService.get<string>('GAZPROM_PARTNER_ID');
   }
 
-  public async getExistingSession(phone: string): Promise<ExistingSessionDto> {
+  public async getExistingSession(
+    clientId: string,
+  ): Promise<ExistingSessionDto | GazpormErrorDto> {
     const config = this.setHeaders();
-    let response: ExistingSessionDto;
+    let session: ExistingSessionDto | GazpormErrorDto;
 
     try {
-      const request: AxiosResponse<ExistingSessionDto, unknown> =
-        await firstValueFrom(
-          this.httpService.post(
-            `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${phone}/create/session,`,
-            config,
-          ),
-        );
+      const request: AxiosResponse = await firstValueFrom(
+        this.httpService.post(
+          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${clientId}/create/session`,
+          null,
+          config,
+        ),
+      );
 
-      response = request.data;
+      session = request.data;
     } catch (err) {
-      const { res } = err;
-      throw new GazpromException(res.statusCode, res.statusMessage);
+      const { response } = err;
+      session = response.data;
     }
 
-    return response;
+    return session;
   }
 
-  public async createRegistrationSession(client: GazpromClientDto) {
+  public async createRegistrationSession(
+    client: GazpromClientDto,
+  ): Promise<ExistingSessionDto | GazpormErrorDto> {
     const config = this.setHeaders();
-    let response: any;
+    let session: ExistingSessionDto | GazpormErrorDto;
     const body: RegistrationSessionDto = {
+      partner_user_id: client.clientId,
       phone_number: client.phone,
-      partner_user_id: '12345',
     };
+
     try {
       const request: AxiosResponse = await firstValueFrom(
         this.httpService.post(
@@ -61,15 +68,40 @@ export class GazpormService {
           config,
         ),
       );
-      response = request.data;
-    } catch (e) {
-      throw new GazpromException(res.statusCode, res.statusMessage);
+      session = request.data;
+    } catch (err) {
+      const { response } = err;
+      session = response.data;
     }
 
-    return response;
+    return session;
   }
 
-  public async getSubscriptionStatus(clientId: string) {}
+  public async getSubscriptionStatus(
+    clientId: string,
+  ): Promise<SubscribtionStatusDto | GazpormErrorDto> {
+    const config = this.setHeaders();
+    let subscibtionStatus: SubscribtionStatusDto | GazpormErrorDto;
+
+    try {
+      const request: AxiosResponse = await firstValueFrom(
+        this.httpService.get(
+          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${clientId}/user-promotions`,
+          config,
+        ),
+      );
+
+      subscibtionStatus = request.data;
+    } catch (err) {
+      const { response } = err;
+      subscibtionStatus = response.data;
+
+      // console.log(`ERROR: ${res.statusCode}  ${res.statusMessage}`);
+      // throw new GazpromException(res.statusCode, res.statusMessage);
+    }
+
+    return subscibtionStatus;
+  }
 
   private setHeaders(): { headers: { Authorization: string } } {
     return {

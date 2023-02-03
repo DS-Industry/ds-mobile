@@ -1,19 +1,4 @@
 export class RegistrationSessionDto {
-  contact_info: string = null;
-  source_tonw: string = null;
-  phone_number: string = null;
-  bonus_points: string = null;
-  email: string = null;
-  timezone: string = null;
-  language: string = null;
-  partner_user_id: string = null;
-  partner_user_status: string = null;
-  partner_user_grade: string = null;
-  lastname: string = null;
-  firstname: string = null;
-  patronymic: string = null;
-  sex: string = null;
-  birth_date: string = null;
-  address: string = null;
-  meta: null = null;
+  phone_number: string;
+  partner_user_id: string;
 }
