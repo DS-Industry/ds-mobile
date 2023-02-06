@@ -31,7 +31,7 @@ export class PayService {
       addPaymentRequest.nomer,
       addPaymentRequest.email,
       addPaymentRequest.phone,
-      addPaymentRequest.operSum,
+      Math.round(addPaymentRequest.operSum),
       addPaymentRequest.extId,
       date,
     ]);
