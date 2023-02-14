@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ExternalService } from './external.service';
-import { GazpromClientDto } from './dto/req/gazprom-client.dto';
+import { GazpromClientDto } from './gazporm/dto/core/gazprom-client.dto';
 
 @Controller('external')
 export class ExternalController {

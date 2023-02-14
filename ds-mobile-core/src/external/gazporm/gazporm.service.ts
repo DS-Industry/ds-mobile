@@ -1,113 +1,152 @@
-import { Injectable, UseFilters } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { ConfigService } from '@nestjs/config';
-import { ExistingSessionDto } from '../dto/res/existing-session.dto';
-import { AxiosResponse } from 'axios';
-import { firstValueFrom } from 'rxjs';
-import { GazpromException } from '../../common/exceptions/gazprom.exception';
-import { GazpromClientDto } from '../dto/req/gazprom-client.dto';
-import { RegistrationSessionDto } from '../dto/req/registration-session.dto';
-import { GazpromExceptionFilter } from '../../common/filters/gazprom-exception.filter';
-import { SubscribtionStatusDto } from '../dto/res/subscribtion-status.dto';
-import { GazpormErrorDto } from '../dto/res/gazporm-error.dto';
+import { Injectable } from '@nestjs/common';
+import { GazpromRepository } from './gazprom.repository';
+import { GetExistingSessionDto } from './dto/req/get-existing-session.dto';
+import { ExistingSessionDto } from './dto/core/existing-session.dto';
+import { GazpormErrorDto } from './dto/core/gazporm-error.dto';
+import { EntityNotFoundException } from '../../common/exceptions/entity-not-found.exception';
+import {
+  BAD_REQUEST_EXTERNAL_MSG,
+  CONFLICT_ERROR_MSG,
+  ENTITY_NOT_FOUND_MSG,
+  INTERNAL_SERVER_ERROR,
+  INVALID_TOKEN_EXTERNAL_MSG,
+  UNAUTHORIZED_EXTERNAL_MSG,
+} from '../../common/constants';
+import { ExternalBadRequestException } from '../../common/exceptions/external-bad-request.exception';
+import { ExternalUnauthorizedException } from '../../common/exceptions/external-unauthorized.exception';
+import { ExternalForbiddenException } from '../../common/exceptions/external-forbidden.exception';
+import { InternalServerErrorException } from '../../common/exceptions/internal-server-error.exception';
+import { CreateGazpormClientDto } from './dto/req/create-gazporm-client.dto';
+import { GazpromClientDto } from './dto/core/gazprom-client.dto';
+import { ConflictErrorException } from '../../common/exceptions/conflict-error.exception';
+import { GetSubscribtionStatusDto } from './dto/req/get-subscribtion-status.dto';
+import { SubscribtionStatusDto } from './dto/core/subscribtion-status.dto';
+import { GetSubscribtionStatusResponseDto } from './dto/res/get-subscribtion-status-response.dto';
+import { SubscribtionStatus } from '../../common/enums/subscribtion-status.enum';
+import { GetExistingSessionResponseDto } from './dto/res/get-existing-session-response.dto';
+import { ExternalClientStatus } from '../../common/enums/external-client-status.enum';
+import { CreateGazpromClientResponseDto } from './dto/res/create-gazprom-client-response.dto';
 
-@UseFilters(GazpromExceptionFilter)
 @Injectable()
 export class GazpormService {
-  private apiKey: string;
-  private baseUrl: string;
-  private partnerId: string;
-  constructor(
-    private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
-  ) {
-    this.baseUrl = configService.get<string>('GAZPROM_BASE_URL');
-    this.apiKey = configService.get<string>('GAZPROM_API_KEY');
-    this.partnerId = configService.get<string>('GAZPROM_PARTNER_ID');
-  }
+  constructor(private readonly gazpromRepository: GazpromRepository) {}
 
   public async getExistingSession(
-    clientId: string,
-  ): Promise<ExistingSessionDto | GazpormErrorDto> {
-    const config = this.setHeaders();
-    let session: ExistingSessionDto | GazpormErrorDto;
+    data: GetExistingSessionDto,
+  ): Promise<GetExistingSessionResponseDto> {
+    const { clientId } = data;
+    const response: ExistingSessionDto | GazpormErrorDto =
+      await this.gazpromRepository.getExistingSession(clientId);
 
-    try {
-      const request: AxiosResponse = await firstValueFrom(
-        this.httpService.post(
-          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${clientId}/create/session`,
-          null,
-          config,
-        ),
-      );
-
-      session = request.data;
-    } catch (err) {
-      const { response } = err;
-      session = response.data;
+    if (response instanceof GazpormErrorDto) {
+      switch (response.code) {
+        case 5:
+          throw new EntityNotFoundException(ENTITY_NOT_FOUND_MSG);
+          break;
+        case 3:
+          throw new ExternalBadRequestException(BAD_REQUEST_EXTERNAL_MSG);
+          break;
+        case 7:
+          throw new ExternalUnauthorizedException(UNAUTHORIZED_EXTERNAL_MSG);
+          break;
+        case 16:
+          throw new ExternalForbiddenException(INVALID_TOKEN_EXTERNAL_MSG);
+          break;
+        default:
+          throw new InternalServerErrorException(INTERNAL_SERVER_ERROR);
+          break;
+      }
     }
+
+    const session: GetExistingSessionResponseDto = {
+      token: response.token,
+      clientStatus: ExternalClientStatus.EXISTING,
+    };
 
     return session;
   }
 
   public async createRegistrationSession(
-    client: GazpromClientDto,
-  ): Promise<ExistingSessionDto | GazpormErrorDto> {
-    const config = this.setHeaders();
-    let session: ExistingSessionDto | GazpormErrorDto;
-    const body: RegistrationSessionDto = {
-      partner_user_id: client.clientId,
-      phone_number: client.phone,
+    data: CreateGazpormClientDto,
+  ): Promise<CreateGazpromClientResponseDto> {
+    const { clientId, phone } = data;
+    const request: GazpromClientDto = {
+      clientId: clientId,
+      phone: phone,
     };
 
-    try {
-      const request: AxiosResponse = await firstValueFrom(
-        this.httpService.post(
-          `${this.baseUrl}/v1/partners/${this.partnerId}/register/client`,
-          body,
-          config,
-        ),
-      );
-      session = request.data;
-    } catch (err) {
-      const { response } = err;
-      session = response.data;
-    }
+    const response: ExistingSessionDto | GazpormErrorDto =
+      await this.gazpromRepository.createRegistrationSession(request);
 
+    if (response instanceof GazpormErrorDto) {
+      switch (response.code) {
+        case 3:
+          throw new ExternalBadRequestException(BAD_REQUEST_EXTERNAL_MSG);
+          break;
+        case 16:
+          throw new ExternalForbiddenException(INVALID_TOKEN_EXTERNAL_MSG);
+          break;
+        case 7:
+          throw new ExternalUnauthorizedException(UNAUTHORIZED_EXTERNAL_MSG);
+          break;
+        case 5:
+          throw new EntityNotFoundException(ENTITY_NOT_FOUND_MSG);
+          break;
+        case 10:
+          throw new ConflictErrorException(CONFLICT_ERROR_MSG);
+        default:
+          throw new InternalServerErrorException(INTERNAL_SERVER_ERROR);
+          break;
+      }
+    }
+    const session: CreateGazpromClientResponseDto = {
+      token: response.token,
+      clientStatus: ExternalClientStatus.NEW,
+    };
     return session;
   }
 
-  public async getSubscriptionStatus(
-    clientId: string,
-  ): Promise<SubscribtionStatusDto | GazpormErrorDto> {
-    const config = this.setHeaders();
-    let subscibtionStatus: SubscribtionStatusDto | GazpormErrorDto;
+  public async subscribtionStatusCheck(
+    data: GetSubscribtionStatusDto,
+  ): Promise<GetSubscribtionStatusResponseDto> {
+    const { clientId } = data;
+    const response: SubscribtionStatusDto | GazpormErrorDto =
+      await this.gazpromRepository.getSubscriptionStatus(clientId);
 
-    try {
-      const request: AxiosResponse = await firstValueFrom(
-        this.httpService.get(
-          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${clientId}/user-promotions`,
-          config,
-        ),
-      );
-
-      subscibtionStatus = request.data;
-    } catch (err) {
-      const { response } = err;
-      subscibtionStatus = response.data;
-
-      // console.log(`ERROR: ${res.statusCode}  ${res.statusMessage}`);
-      // throw new GazpromException(res.statusCode, res.statusMessage);
+    if (response instanceof GazpormErrorDto) {
+      switch (response.code) {
+        case 3:
+          throw new ExternalBadRequestException(BAD_REQUEST_EXTERNAL_MSG);
+          break;
+        case 16:
+          throw new ExternalForbiddenException(INVALID_TOKEN_EXTERNAL_MSG);
+          break;
+        case 7:
+          throw new ExternalUnauthorizedException(UNAUTHORIZED_EXTERNAL_MSG);
+          break;
+        case 5:
+          throw new EntityNotFoundException(ENTITY_NOT_FOUND_MSG);
+          break;
+        default:
+          throw new InternalServerErrorException(INTERNAL_SERVER_ERROR);
+          break;
+      }
     }
 
-    return subscibtionStatus;
-  }
+    const status: GetSubscribtionStatusResponseDto =
+      new GetSubscribtionStatusResponseDto();
 
-  private setHeaders(): { headers: { Authorization: string } } {
-    return {
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-    };
+    if (
+      response.count == 1 &&
+      response.items[0].status == 'USER_PROMOTION_STATUS_ACTIVE'
+    ) {
+      status.status = SubscribtionStatus.ACTIVE;
+      status.expirationAt = response.items[0].expiration_at;
+    } else {
+      status.status = SubscribtionStatus.END;
+      status.expirationAt = null;
+    }
+
+    return status;
   }
 }
