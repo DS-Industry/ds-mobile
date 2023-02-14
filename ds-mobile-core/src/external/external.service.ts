@@ -8,10 +8,22 @@ import { CreateGazpormClientDto } from './gazporm/dto/req/create-gazporm-client.
 import { CreateGazpromClientResponseDto } from './gazporm/dto/res/create-gazprom-client-response.dto';
 import { GetActiveExternalSessionResponseDto } from './dto/res/get-active-external-session-response.dto';
 import { ExternalClientStatus } from '../common/enums/external-client-status.enum';
+import { GetSubscribtionStatusResponseDto } from './gazporm/dto/res/get-subscribtion-status-response.dto';
+import { SubscribtionStatus } from '../common/enums/subscribtion-status.enum';
+import { ENTITY_NOT_FOUND_MSG } from '../common/constants';
+import { CardService } from '../card/card.service';
+import { Card } from '../card/model/card.model';
+import { UpdateCardRequestDto } from '../card/dto/req/update-card-request.dto';
+import { GetExternalActivePromoDto } from './dto/req/get-external-active-promo.dto';
+import { GetExternalActivePromoResponseDto } from './dto/res/get-external-active-promo-response.dto';
 
 @Injectable()
 export class ExternalService {
-  constructor(private readonly gazpromService: GazpormService) {}
+  private readonly ognTariffId = 2046;
+  constructor(
+    private readonly gazpromService: GazpormService,
+    private readonly cardService: CardService,
+  ) {}
 
   public async getActiveSession(
     data: GetActiveExternalSessionDto,
@@ -47,6 +59,32 @@ export class ExternalService {
       existingClient:
         newSession.clientStatus == ExternalClientStatus.NEW && false,
     };
+    return response;
+  }
+
+  public async activatePromo(
+    data: GetExternalActivePromoDto,
+  ): Promise<GetExternalActivePromoResponseDto> {
+    //check sub status
+    const staus: GetSubscribtionStatusResponseDto =
+      await this.gazpromService.subscribtionStatusCheck({
+        clientId: data.clientId.toString(),
+      });
+
+    if (staus.status == SubscribtionStatus.END)
+      throw new EntityNotFoundException(ENTITY_NOT_FOUND_MSG);
+
+    const cardUpdateData: UpdateCardRequestDto = {
+      cardTypeId: this.ognTariffId,
+    };
+    // if active change tariff
+    const card: any = await this.cardService.update(data.card, cardUpdateData);
+
+    const response: GetExternalActivePromoResponseDto = {
+      promoStatus: SubscribtionStatus.ACTIVE,
+      promoTariff: true,
+    };
+
     return response;
   }
 }

@@ -10,5 +10,6 @@ import { VCardOper } from '../common/models/v-card-oper.model';
   imports: [AuthModule, TypeOrmModule.forFeature([Card, VCardOper])],
   controllers: [CardController],
   providers: [CardService],
+  exports: [CardService],
 })
 export class CardModule {}

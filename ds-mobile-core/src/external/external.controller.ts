@@ -1,23 +1,45 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  ConflictException,
+  Controller,
+  ForbiddenException,
+  InternalServerErrorException,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ExternalService } from './external.service';
-import { GazpromClientDto } from './gazporm/dto/core/gazprom-client.dto';
+import { GetActiveSessionHttpRequestDto } from './dto/http/get-active-session-http-request.dto';
+import { GetActiveExternalSessionDto } from './dto/req/get-active-external-session.dto';
+import { ExternalBadRequestException } from '../common/exceptions/external-bad-request.exception';
+import { ExternalForbiddenException } from '../common/exceptions/external-forbidden.exception';
+import { ExternalUnauthorizedException } from '../common/exceptions/external-unauthorized.exception';
+import { ConflictErrorException } from '../common/exceptions/conflict-error.exception';
 
-@Controller('external')
+@Controller('partner')
 export class ExternalController {
   constructor(private readonly externalService: ExternalService) {}
 
-  @Post('/gazprom/active')
-  async avtivateGazpromPromo(@Body() client: GazpromClientDto) {
-    return this.externalService.activatePromotion(client);
-  }
-
-  @Post('gazprom/registartion')
-  async createRegistrationSession(@Body() client: GazpromClientDto) {
-    return this.externalService.createRegistrationSession(client);
-  }
-
-  @Get('gazprom/status')
-  async getSubscribtionStatus(@Body() client: GazpromClientDto) {
-    return this.externalService.getSubscribtionSatus(client);
+  @Post('/client/session')
+  async getActiveSession(@Body() client: GetActiveSessionHttpRequestDto) {
+    try {
+      const data: GetActiveExternalSessionDto = {
+        clientId: client.clientId,
+        phone: client.phone,
+      };
+      return this.externalService.getActiveSession(data);
+    } catch (e) {
+      if (e instanceof ExternalBadRequestException) {
+        throw new BadRequestException(e, e.message);
+      } else if (e instanceof ExternalForbiddenException) {
+        throw new ForbiddenException(e, e.message);
+      } else if (e instanceof ExternalUnauthorizedException) {
+        throw new UnauthorizedException(e, e.message);
+      } else if (e instanceof ConflictErrorException) {
+        throw new ConflictException(e, e.message);
+      } else {
+        throw new InternalServerErrorException(e, e.message);
+      }
+    }
   }
 }

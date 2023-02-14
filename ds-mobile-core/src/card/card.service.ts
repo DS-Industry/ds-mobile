@@ -14,6 +14,7 @@ import {
 } from './pdf/pft-file-outline';
 import { CardOperationsPdfRequestDto } from './dto/req/card-operations-pdf-request.dto';
 import { Card } from './model/card.model';
+import { UpdateCardRequestDto } from './dto/req/update-card-request.dto';
 
 @Injectable()
 export class CardService {
@@ -176,5 +177,10 @@ WHERE c.SEARCH_DEV_NOMER = '${card}') t`;
     }
 
     return tariff;
+  }
+
+  public async update(unqNumber: string, data: UpdateCardRequestDto) {
+    const card = this.cardRepository.update({ devNomer: unqNumber }, data);
+    return card;
   }
 }

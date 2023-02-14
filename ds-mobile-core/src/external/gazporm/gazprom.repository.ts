@@ -38,10 +38,16 @@ export class GazpromRepository {
         ),
       );
 
+      const successResponse: ExistingSessionDto = {
+        ...request.data,
+      };
       session = request.data;
     } catch (err) {
       const { response } = err;
-      session = response.data;
+      const errorResponse: GazpormErrorDto = {
+        ...response.data,
+      };
+      session = errorResponse;
     }
 
     return session;
