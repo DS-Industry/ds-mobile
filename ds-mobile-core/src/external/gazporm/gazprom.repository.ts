@@ -28,6 +28,8 @@ export class GazpromRepository {
   ): Promise<ExistingSessionDto | GazpormErrorDto> {
     const config = this.setHeaders();
     let session: ExistingSessionDto | GazpormErrorDto;
+    let successResponse: ExistingSessionDto = new ExistingSessionDto();
+    let errorResponse: GazpormErrorDto = new GazpormErrorDto();
 
     try {
       const request: AxiosResponse = await firstValueFrom(
@@ -38,19 +40,19 @@ export class GazpromRepository {
         ),
       );
 
-      const successResponse: ExistingSessionDto = {
+      successResponse = {
         ...request.data,
       };
       session = request.data;
     } catch (err) {
       const { response } = err;
-      const errorResponse: GazpormErrorDto = {
+      errorResponse = {
         ...response.data,
       };
       session = errorResponse;
     }
 
-    return session;
+    return errorResponse;
   }
 
   public async createRegistrationSession(
