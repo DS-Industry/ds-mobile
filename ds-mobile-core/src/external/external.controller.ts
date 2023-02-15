@@ -7,7 +7,7 @@ import {
   Get,
   HttpException,
   HttpStatus,
-  InternalServerErrorException,
+  InternalServerErrorException, NotFoundException,
   Post,
   Query,
   UnauthorizedException,
@@ -26,6 +26,7 @@ import { GetSubscribtionStatusHttpRequestDto } from './dto/http/get-subscribtion
 import { GetExternalSubscribtionStatusDto } from './dto/req/get-external-subscribtion-status.dto';
 import { NotAcceptableErrorException } from '../common/exceptions/not-acceptable-error.exception';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import {EntityNotFoundException} from "../common/exceptions/entity-not-found.exception";
 
 @Controller('partner')
 export class ExternalController {
@@ -75,6 +76,8 @@ export class ExternalController {
         throw new UnauthorizedException(e, e.message);
       } else if (e instanceof ConflictErrorException) {
         throw new ConflictException(e, e.message);
+      } else if (e instanceof EntityNotFoundException) {
+        throw new NotFoundException(e, e.message);
       } else {
         throw new InternalServerErrorException(e, e.message);
       }
@@ -103,7 +106,9 @@ export class ExternalController {
         throw new ConflictException(e, e.message);
       } else if (e instanceof NotAcceptableErrorException) {
         throw new HttpException(e.message, HttpStatus.NOT_ACCEPTABLE);
-      } else {
+      } else if (e instanceof EntityNotFoundException) {
+        throw new NotFoundException(e, e.message);
+    } else {
         throw new InternalServerErrorException(e, e.message);
       }
     }

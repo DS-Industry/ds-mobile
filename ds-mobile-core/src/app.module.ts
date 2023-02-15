@@ -19,7 +19,7 @@ import { Client } from './client/model/client.model';
 
 import { Apikey } from './client/model/apikey.model';
 import { ExternalModule } from './external/external.module';
-import {PromoTariff} from "./common/models/promo-tariff.model";
+import { PromoTariff } from './common/models/promo-tariff.model';
 
 @Module({
   imports: [
