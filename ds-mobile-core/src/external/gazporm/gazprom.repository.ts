@@ -14,6 +14,7 @@ export class GazpromRepository {
   private apiKey: string;
   private baseUrl: string;
   private partnerId: string;
+  private promoFilter: string;
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
@@ -21,6 +22,7 @@ export class GazpromRepository {
     this.baseUrl = configService.get<string>('GAZPROM_BASE_URL');
     this.apiKey = configService.get<string>('GAZPROM_API_KEY');
     this.partnerId = configService.get<string>('GAZPROM_PARTNER_ID');
+    this.promoFilter = configService.get<string>('PROMO_FILTER');
   }
 
   public async getExistingSession(
@@ -36,7 +38,8 @@ export class GazpromRepository {
           config,
         ),
       );
-      console.log(request)
+      //TODO REMOVE COSOLE LOG
+      console.log(request);
       return new ExistingSessionDto(request.data.token);
     } catch (err) {
       const { response } = err;
@@ -88,7 +91,7 @@ export class GazpromRepository {
     try {
       const request: AxiosResponse = await firstValueFrom(
         this.httpService.get(
-          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${clientId}/user-promotions`,
+          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${clientId}/user-promotions?filter.public_ids=${this.promoFilter}`,
           config,
         ),
       );

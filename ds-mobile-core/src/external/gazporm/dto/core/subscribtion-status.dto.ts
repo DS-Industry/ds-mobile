@@ -9,13 +9,13 @@ export class SubscribtionStatusDto {
 }
 
 class Item {
-  id: number;
+  id: string;
   status: string;
-  start_at: Date;
-  expiration_at: Date;
-  created_at: Date;
-  updated_at: Date;
-  refresh_at: Date;
+  start_at: string;
+  expiration_at: string;
+  created_at: string;
+  updated_at: string;
+  refreshed_at: string;
   partner_user_id: string;
   promotion: {
     id: string;

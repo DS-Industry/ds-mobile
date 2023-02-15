@@ -20,6 +20,8 @@ import { UpdateCardRequestDto } from '../card/dto/req/update-card-request.dto';
 import { GetExternalActivePromoDto } from './dto/req/get-external-active-promo.dto';
 import { GetExternalActivePromoResponseDto } from './dto/res/get-external-active-promo-response.dto';
 import { NotAcceptableErrorException } from '../common/exceptions/not-acceptable-error.exception';
+import { GetExternalSubscribtionStatusDto } from './dto/req/get-external-subscribtion-status.dto';
+import { GetExternalSubscribtionResponseDto } from './dto/res/get-external-subscribtion-response.dto';
 
 @Injectable()
 export class ExternalService {
@@ -81,8 +83,9 @@ export class ExternalService {
     const cardUpdateData: UpdateCardRequestDto = {
       cardTypeId: this.ognTariffId,
     };
+
     // if active change tariff
-    const card: any = await this.cardService.update(data.card, cardUpdateData);
+    await this.cardService.upgradeCardPromo(data.card, this.ognTariffId);
 
     const response: GetExternalActivePromoResponseDto = {
       promoStatus: SubscribtionStatus.ACTIVE,
@@ -92,8 +95,10 @@ export class ExternalService {
     return response;
   }
 
-  public async getSubscribtionStatus(data: any): Promise<any> {
-    const card: Card = await this.cardService.findOneByDevNomer(data.devNomer);
+  public async getSubscribtionStatus(
+    data: GetExternalSubscribtionStatusDto,
+  ): Promise<GetExternalSubscribtionResponseDto> {
+    const card: Card = await this.cardService.findOneByDevNomer(data.card);
 
     if (card.cardTypeId != this.ognTariffId)
       throw new NotAcceptableErrorException(NOT_ACCEPTABLE_ERROR_MSG);
@@ -104,10 +109,17 @@ export class ExternalService {
         clientId: data.clientId.toString(),
       });
 
+    const response: GetExternalSubscribtionResponseDto = {
+      promoStatus: staus.status,
+    };
+
     if (staus.status == SubscribtionStatus.ACTIVE) {
-      return;
+      return response;
     }
 
     //downgrade tarrif;
+    await this.cardService.downgradeCardPromo(data.card);
+
+    return response;
   }
 }

@@ -141,7 +141,7 @@ export class GazpormService {
       response.items[0].status == 'USER_PROMOTION_STATUS_ACTIVE'
     ) {
       status.status = SubscribtionStatus.ACTIVE;
-      status.expirationAt = response.items[0].expiration_at;
+      status.expirationAt = new Date(response.items[0].expiration_at);
     } else {
       status.status = SubscribtionStatus.END;
       status.expirationAt = null;
