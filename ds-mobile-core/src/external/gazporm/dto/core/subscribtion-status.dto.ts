@@ -1,6 +1,11 @@
 export class SubscribtionStatusDto {
   items: Item[];
   count: number;
+
+  constructor(items: Item[], count: number) {
+    this.items = items;
+    this.count = count;
+  }
 }
 
 class Item {

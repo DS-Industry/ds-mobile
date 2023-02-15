@@ -10,12 +10,16 @@ import { GetActiveExternalSessionResponseDto } from './dto/res/get-active-extern
 import { ExternalClientStatus } from '../common/enums/external-client-status.enum';
 import { GetSubscribtionStatusResponseDto } from './gazporm/dto/res/get-subscribtion-status-response.dto';
 import { SubscribtionStatus } from '../common/enums/subscribtion-status.enum';
-import { ENTITY_NOT_FOUND_MSG } from '../common/constants';
+import {
+  ENTITY_NOT_FOUND_MSG,
+  NOT_ACCEPTABLE_ERROR_MSG,
+} from '../common/constants';
 import { CardService } from '../card/card.service';
 import { Card } from '../card/model/card.model';
 import { UpdateCardRequestDto } from '../card/dto/req/update-card-request.dto';
 import { GetExternalActivePromoDto } from './dto/req/get-external-active-promo.dto';
 import { GetExternalActivePromoResponseDto } from './dto/res/get-external-active-promo-response.dto';
+import { NotAcceptableErrorException } from '../common/exceptions/not-acceptable-error.exception';
 
 @Injectable()
 export class ExternalService {
@@ -86,5 +90,24 @@ export class ExternalService {
     };
 
     return response;
+  }
+
+  public async getSubscribtionStatus(data: any): Promise<any> {
+    const card: Card = await this.cardService.findOneByDevNomer(data.devNomer);
+
+    if (card.cardTypeId != this.ognTariffId)
+      throw new NotAcceptableErrorException(NOT_ACCEPTABLE_ERROR_MSG);
+
+    //Check subscribtion status
+    const staus: GetSubscribtionStatusResponseDto =
+      await this.gazpromService.subscribtionStatusCheck({
+        clientId: data.clientId.toString(),
+      });
+
+    if (staus.status == SubscribtionStatus.ACTIVE) {
+      return;
+    }
+
+    //downgrade tarrif;
   }
 }

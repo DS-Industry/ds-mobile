@@ -27,9 +27,6 @@ export class GazpromRepository {
     clientId: string,
   ): Promise<ExistingSessionDto | GazpormErrorDto> {
     const config = this.setHeaders();
-    let session: ExistingSessionDto | GazpormErrorDto;
-    let successResponse: ExistingSessionDto = new ExistingSessionDto();
-    let errorResponse: GazpormErrorDto = new GazpormErrorDto();
 
     try {
       const request: AxiosResponse = await firstValueFrom(
@@ -39,27 +36,24 @@ export class GazpromRepository {
           config,
         ),
       );
-
-      successResponse = {
-        ...request.data,
-      };
-      session = request.data;
+      console.log(request)
+      return new ExistingSessionDto(request.data.token);
     } catch (err) {
       const { response } = err;
-      errorResponse = {
-        ...response.data,
-      };
-      session = errorResponse;
-    }
 
-    return errorResponse;
+      return new GazpormErrorDto(
+        response.data.code,
+        response.data.message,
+        response.data.correlation_id,
+        response.data.details,
+      );
+    }
   }
 
   public async createRegistrationSession(
     client: GazpromClientDto,
   ): Promise<ExistingSessionDto | GazpormErrorDto> {
     const config = this.setHeaders();
-    let session: ExistingSessionDto | GazpormErrorDto;
     const body: RegistrationSessionDto = {
       partner_user_id: client.clientId,
       phone_number: client.phone,
@@ -73,13 +67,16 @@ export class GazpromRepository {
           config,
         ),
       );
-      session = request.data;
+      return new ExistingSessionDto(request.data.token);
     } catch (err) {
       const { response } = err;
-      session = response.data;
+      return new GazpormErrorDto(
+        response.data.code,
+        response.data.message,
+        response.data.correlation_id,
+        response.data.details,
+      );
     }
-
-    return session;
   }
 
   public async getSubscriptionStatus(
@@ -96,13 +93,16 @@ export class GazpromRepository {
         ),
       );
 
-      subscibtionStatus = request.data;
+      return new SubscribtionStatusDto(request.data.items, request.data.count);
     } catch (err) {
       const { response } = err;
-      subscibtionStatus = response.data;
+      return new GazpormErrorDto(
+        response.data.code,
+        response.data.message,
+        response.data.correlation_id,
+        response.data.details,
+      );
     }
-
-    return subscibtionStatus;
   }
 
   private setHeaders(): { headers: { Authorization: string } } {

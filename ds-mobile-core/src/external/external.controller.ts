@@ -27,7 +27,7 @@ export class ExternalController {
         clientId: client.clientId,
         phone: client.phone,
       };
-      return this.externalService.getActiveSession(data);
+      return await this.externalService.getActiveSession(data);
     } catch (e) {
       if (e instanceof ExternalBadRequestException) {
         throw new BadRequestException(e, e.message);

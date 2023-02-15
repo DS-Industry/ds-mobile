@@ -19,6 +19,7 @@ import { Client } from './client/model/client.model';
 
 import { Apikey } from './client/model/apikey.model';
 import { ExternalModule } from './external/external.module';
+import {PromoTariff} from "./common/models/promo-tariff.model";
 
 @Module({
   imports: [
@@ -41,7 +42,7 @@ import { ExternalModule } from './external/external.module';
         password: configService.get('DB_PASSWORD'),
         sid: configService.get('DB_SID'),
         synchronize: false,
-        entities: [Card, VCardOper, Client, Apikey],
+        entities: [Card, VCardOper, Client, Apikey, PromoTariff],
       }),
       inject: [ConfigService],
     }),

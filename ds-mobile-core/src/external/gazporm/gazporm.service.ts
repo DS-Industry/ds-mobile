@@ -38,7 +38,6 @@ export class GazpormService {
     const response: ExistingSessionDto | GazpormErrorDto =
       await this.gazpromRepository.getExistingSession(clientId);
 
-    console.log(response instanceof GazpormErrorDto);
     if (response instanceof GazpormErrorDto) {
       switch (response.code) {
         case 5:

@@ -15,6 +15,8 @@ import {
 import { CardOperationsPdfRequestDto } from './dto/req/card-operations-pdf-request.dto';
 import { Card } from './model/card.model';
 import { UpdateCardRequestDto } from './dto/req/update-card-request.dto';
+import { EntityNotFoundException } from '../common/exceptions/entity-not-found.exception';
+import { ENTITY_NOT_FOUND_MSG } from '../common/constants';
 
 @Injectable()
 export class CardService {
@@ -180,7 +182,22 @@ WHERE c.SEARCH_DEV_NOMER = '${card}') t`;
   }
 
   public async update(unqNumber: string, data: UpdateCardRequestDto) {
-    const card = this.cardRepository.update({ devNomer: unqNumber }, data);
+    const card = await this.cardRepository.update(
+      { devNomer: unqNumber },
+      data,
+    );
+    return card;
+  }
+
+  public async findOneByDevNomer(uqnNumber: string) {
+    const card: Card = await this.cardRepository.findOne({
+      where: {
+        devNomer: uqnNumber,
+      },
+    });
+
+    if (!card) throw new EntityNotFoundException(ENTITY_NOT_FOUND_MSG);
+
     return card;
   }
 }
