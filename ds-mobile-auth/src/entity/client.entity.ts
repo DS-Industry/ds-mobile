@@ -16,7 +16,7 @@ export class Client {
   @Column({ type: 'bigint', name: 'gender_id', nullable: true })
   genderId: string;
   @Column({ type: 'bigint', name: 'client_type_id', nullable: true })
-  clientTypeId: string;
+  clientTypeId: number;
   @Column({ type: 'timestamp', name: 'birthday', nullable: true })
   birthday: Date;
   @Column({ type: 'timestamp', name: 'inst_date', nullable: true })
@@ -25,4 +25,8 @@ export class Client {
   updDate: Date;
   @Column({ type: 'timestamp', name: 'activated_date', nullable: true })
   activationDate: Date;
+  @Column({ type: 'int', name: 'terms_accepted' })
+  isTermsAccepted: number;
+  @Column({ type: 'int', name: 'promo_accepted' })
+  isLetterAccepted: number;
 }

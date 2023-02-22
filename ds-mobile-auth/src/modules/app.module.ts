@@ -11,11 +11,12 @@ import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { Logtail } from '@logtail/node';
 import { LogtailTransport } from '@logtail/winston';
-import * as util from 'util';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Client } from '../entity/client.entity';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ClientModule } from './client.module';
+import { POSTGRES_DB_CONNECTION } from '../common/utils/constants';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
+        name: POSTGRES_DB_CONNECTION,
         type: 'postgres',
         host: configService.get('PSQL_HOST'),
         port: configService.get('PSQL_PORT'),
@@ -80,6 +82,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       }),
     }),
     HttpModule,
+    ClientModule,
   ],
   controllers: [AuthController],
   providers: [

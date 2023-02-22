@@ -3,11 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Client } from '../entity/client.entity';
 import { Repository } from 'typeorm';
 import { CreateClientRequestDto } from '../dto/req/create-client-request.dto';
+import { POSTGRES_DB_CONNECTION } from '../common/utils/constants';
 
 @Injectable()
 export class ClientService {
   constructor(
-    @InjectRepository(Client)
+    @InjectRepository(Client, POSTGRES_DB_CONNECTION)
     private readonly clientRepository: Repository<Client>,
   ) {}
 
@@ -23,6 +24,8 @@ export class ClientService {
       ...(data.birthday && { birthday: data.birthday }),
       insDate: new Date(Date.now()),
       activationDate: new Date(Date.now()),
+      isTermsAccepted: data.isTermsAccepted,
+      isLetterAccepted: data.isLetterAccepted,
     });
 
     await this.clientRepository.save(client);

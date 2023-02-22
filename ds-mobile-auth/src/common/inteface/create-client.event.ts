@@ -1,4 +1,4 @@
-export class CreateClientRequestDto {
+export interface ICreateClientEvent {
   name: string;
   phone: string;
   correctPhone: string;

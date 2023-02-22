@@ -1,13 +1,13 @@
 import {
-  IsBoolean,
   IsNotEmpty,
   IsNumber,
   IsNumberString,
   IsOptional,
   IsString,
-  Length,
   Matches,
+  Max,
   MaxLength,
+  Min,
   MinLength,
 } from 'class-validator';
 
@@ -23,9 +23,15 @@ export class OtpVerificationRequestDto {
   @MaxLength(6, { message: 'Otp must be valid' })
   otp: string;
 
-  @IsOptional()
   @IsNumber()
+  @Min(0)
+  @Max(1)
   isTermsAccepted?: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(1)
+  isLetterAccepted?: number;
 
   @IsOptional()
   @IsString()

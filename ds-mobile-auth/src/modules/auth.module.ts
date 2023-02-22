@@ -5,13 +5,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
 import { BeelineModule } from '../beeline/beeline.module';
+import { ClientModule } from './client.module';
 
 @Module({
   imports: [
     HttpModule,
-    TypeOrmModule.forFeature([]),
     ConfigModule,
     BeelineModule,
+    ClientModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],
