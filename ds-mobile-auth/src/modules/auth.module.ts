@@ -12,7 +12,6 @@ import { ClientModule } from './client.module';
     HttpModule,
     ConfigModule,
     BeelineModule,
-    ClientModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

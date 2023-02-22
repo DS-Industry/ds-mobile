@@ -17,6 +17,8 @@ import { Client } from '../entity/client.entity';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ClientModule } from './client.module';
 import { POSTGRES_DB_CONNECTION } from '../common/utils/constants';
+import { AuthModule } from './auth.module';
+import { BeelineModule } from '../beeline/beeline.module';
 
 @Module({
   imports: [
@@ -81,14 +83,11 @@ import { POSTGRES_DB_CONNECTION } from '../common/utils/constants';
         limit: config.get<number>('LIMIT'),
       }),
     }),
-    HttpModule,
     ClientModule,
+    AuthModule,
+    BeelineModule,
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    BeelineService,
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
-  ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}
