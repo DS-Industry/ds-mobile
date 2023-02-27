@@ -3,8 +3,9 @@ import { BeelineService } from './beeline.service';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
 
+
 @Module({
-  controllers: [HttpModule, ConfigModule],
+  imports: [HttpModule, ConfigModule],
   providers: [BeelineService],
   exports: [BeelineService],
 })

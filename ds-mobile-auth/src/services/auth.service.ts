@@ -24,6 +24,12 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AuthorizedWebClientResponse } from '../dto/res/authorized-web-client-response.dto';
 import { WebActivateRequest } from '../dto/req/web-activate-request.dto';
 import { WebActivateResponse } from '../dto/res/web-activate-response.dto';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { CreateClientRequestDto } from '../dto/req/create-client-request.dto';
+import { formatNameUtil } from '../common/utils/format-name.util';
+import { formatPhoneUtil } from '../common/utils/format-phone.util';
+import { ICreateClientEvent } from '../common/inteface/create-client.event';
+import { ClientService } from './client.service';
 
 @Injectable()
 export class AuthService {
@@ -33,6 +39,8 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly beelineService: BeelineService,
     @InjectDataSource() private readonly dataSource: DataSource,
+    private readonly eventEmitter: EventEmitter2,
+    private readonly clientService: ClientService,
   ) {}
 
   /**
@@ -47,7 +55,7 @@ export class AuthService {
     // 2 - add code to database
     /*
     const addOtp: AddOtpResponseDto = await this.addOtpForVerification(
-      otp,
+       otp,
       phone,
     );
     */
@@ -72,6 +80,7 @@ export class AuthService {
    */
   public async signUp(authRequest: OtpVerificationRequestDto) {
     const clientResponse: SuccessClietAuthDto = new SuccessClietAuthDto();
+
     const client: VerifyClientRepsonseDto = await this.checkExistingClient(
       authRequest.phone,
     );
@@ -101,6 +110,17 @@ export class AuthService {
       const authorizedClient: AuthorizedClientResponseDto =
         await this.registerClient(authRequest.phone, promo);
 
+      const formattedPhone: string = formatPhoneUtil(authRequest.phone);
+
+      const clientPayload: ICreateClientEvent = {
+        name: formatNameUtil(formattedPhone),
+        phone: formattedPhone,
+        correctPhone: authRequest.phone,
+        clientTypeId: 2,
+        isTermsAccepted: authRequest.isTermsAccepted,
+        isLetterAccepted: authRequest.isLetterAccepted,
+      };
+
       const apiKey: ApiKeyResponseDto = await this.assignClientApiKey(
         authorizedClient.clientId,
       );
@@ -111,10 +131,28 @@ export class AuthService {
       this.logger.log(
         `Success user registration PHONE: ${authRequest.phone} TermsAccepted: ${authRequest.isTermsAccepted}, Promo: ${authRequest.promoCode}`,
       );
+      this.eventEmitter.emit('client.created', clientPayload);
       return Object.assign(clientResponse, authorizedClient, apiKey);
     } catch (e) {
       throw new AuthHttpException(['Failed to register new client']);
     }
+  }
+
+  @OnEvent('client.created', { async: true })
+  async handleCreateUserEvent(payload: ICreateClientEvent): Promise<void> {
+    const client: CreateClientRequestDto = new CreateClientRequestDto();
+    client.name = payload.name;
+    client.phone = payload.phone;
+    client.correctPhone = payload.correctPhone;
+    client.inn = payload.inn && null;
+    client.email = payload.email && null;
+    client.genderId = payload.genderId && null;
+    client.clientTypeId = payload.clientTypeId;
+    client.birthday = payload.birthday && null;
+    client.isLetterAccepted = payload.isLetterAccepted;
+    client.isTermsAccepted = payload.isTermsAccepted;
+
+    await this.clientService.create(client);
   }
 
   /**

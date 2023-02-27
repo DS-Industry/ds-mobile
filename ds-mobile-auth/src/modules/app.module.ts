@@ -2,15 +2,20 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from '../controllers/auth.controller';
-import { AuthService } from '../services/auth.service';
-import { HttpModule } from '@nestjs/axios';
-import { BeelineService } from '../beeline/beeline.service';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { Logtail } from '@logtail/node';
 import { LogtailTransport } from '@logtail/winston';
+import * as path from 'path';
+import * as fs from 'fs';
+import { Client } from '../entity/client.entity';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ClientModule } from './client.module';
+import { POSTGRES_DB_CONNECTION } from '../common/utils/constants';
+import { AuthModule } from './auth.module';
+import { BeelineModule } from '../beeline/beeline.module';
 
 @Module({
   imports: [
@@ -45,6 +50,29 @@ import { LogtailTransport } from '@logtail/winston';
       }),
       inject: [ConfigService],
     }),
+    EventEmitterModule.forRoot(),
+    TypeOrmModule.forRootAsync({
+      name: POSTGRES_DB_CONNECTION,
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        name: POSTGRES_DB_CONNECTION,
+        type: 'postgres',
+        host: configService.get('PSQL_HOST'),
+        port: configService.get('PSQL_PORT'),
+        username: configService.get('PSQL_USERNAME'),
+        password: configService.get('PSQL_PASSWORD'),
+        database: configService.get('PSQL_DB_NAME'),
+        synchronize: false,
+        ssl: {
+          ca: fs
+            .readFileSync(path.join(__dirname, '..', '..', 'ssl', 'root.crt'))
+            .toString(),
+        },
+        entities: [Client],
+        migrations: [],
+      }),
+      inject: [ConfigService],
+    }),
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -53,13 +81,11 @@ import { LogtailTransport } from '@logtail/winston';
         limit: config.get<number>('LIMIT'),
       }),
     }),
-    HttpModule,
+    ClientModule,
+    AuthModule,
+    BeelineModule,
   ],
-  controllers: [AuthController],
-  providers: [
-    AuthService,
-    BeelineService,
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
-  ],
+  controllers: [],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}
