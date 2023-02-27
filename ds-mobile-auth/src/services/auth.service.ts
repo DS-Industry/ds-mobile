@@ -131,7 +131,12 @@ export class AuthService {
       this.logger.log(
         `Success user registration PHONE: ${authRequest.phone} TermsAccepted: ${authRequest.isTermsAccepted}, Promo: ${authRequest.promoCode}`,
       );
-      this.eventEmitter.emit('client.created', clientPayload);
+
+      try{
+        this.eventEmitter.emit('client.created', clientPayload);
+      } catch (e) {
+        console.log(e);
+      }
       return Object.assign(clientResponse, authorizedClient, apiKey);
     } catch (e) {
       throw new AuthHttpException(['Failed to register new client']);
