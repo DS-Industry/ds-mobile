@@ -110,17 +110,6 @@ export class AuthService {
       const authorizedClient: AuthorizedClientResponseDto =
         await this.registerClient(authRequest.phone, promo);
 
-      const formattedPhone: string = formatPhoneUtil(authRequest.phone);
-
-      const clientPayload: ICreateClientEvent = {
-        name: formatNameUtil(formattedPhone),
-        phone: formattedPhone,
-        correctPhone: authRequest.phone,
-        clientTypeId: 2,
-        isTermsAccepted: authRequest.isTermsAccepted,
-        isLetterAccepted: authRequest.isLetterAccepted,
-      };
-
       const apiKey: ApiKeyResponseDto = await this.assignClientApiKey(
         authorizedClient.clientId,
       );
@@ -128,15 +117,22 @@ export class AuthService {
       if (!apiKey.keyId)
         throw new AuthentificationException([`Internal authentication error`]);
 
-      this.logger.log(
-        `Success user registration PHONE: ${authRequest.phone} TermsAccepted: ${authRequest.isTermsAccepted}, Promo: ${authRequest.promoCode}`,
-      );
+      try {
+        const formattedPhone: string = formatPhoneUtil(authRequest.phone);
 
-      try{
+        const clientPayload: ICreateClientEvent = {
+          name: formatNameUtil(formattedPhone),
+          phone: formattedPhone,
+          correctPhone: authRequest.phone,
+          clientTypeId: 2,
+          isTermsAccepted: authRequest.isTermsAccepted,
+          isLetterAccepted: authRequest.isLetterAccepted,
+        };
         this.eventEmitter.emit('client.created', clientPayload);
       } catch (e) {
         console.log(e);
       }
+
       return Object.assign(clientResponse, authorizedClient, apiKey);
     } catch (e) {
       throw new AuthHttpException(['Failed to register new client']);
@@ -149,12 +145,12 @@ export class AuthService {
     client.name = payload.name;
     client.phone = payload.phone;
     client.correctPhone = payload.correctPhone;
-    client.inn = payload.inn && null;
-    client.email = payload.email && null;
-    client.genderId = payload.genderId && null;
+    client.inn = payload.inn ?? null;
+    client.email = payload.email ?? null;
+    client.genderId = payload.genderId ?? null;
     client.clientTypeId = payload.clientTypeId;
-    client.birthday = payload.birthday && null;
-    client.isLetterAccepted = payload.isLetterAccepted;
+    client.birthday = payload.birthday ?? null;
+    client.isLetterAccepted = payload.isLetterAccepted ?? 1;
     client.isTermsAccepted = payload.isTermsAccepted;
 
     await this.clientService.create(client);
