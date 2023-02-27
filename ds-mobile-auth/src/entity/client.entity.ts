@@ -19,9 +19,9 @@ export class Client {
   clientTypeId: number;
   @Column({ type: 'timestamp', name: 'birthday', nullable: true })
   birthday: Date;
-  @Column({ type: 'timestamp', name: 'inst_date', nullable: true })
+  @Column({ type: 'timestamp', name: 'ins_date', nullable: true })
   insDate: Date;
-  @Column({ type: 'timestamp', name: 'up_date', nullable: true })
+  @Column({ type: 'timestamp', name: 'upd_date', nullable: true })
   updDate: Date;
   @Column({ type: 'timestamp', name: 'activated_date', nullable: true })
   activationDate: Date;

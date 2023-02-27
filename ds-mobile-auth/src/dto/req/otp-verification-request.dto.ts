@@ -23,11 +23,13 @@ export class OtpVerificationRequestDto {
   @MaxLength(6, { message: 'Otp must be valid' })
   otp: string;
 
+  @IsOptional()
   @IsNumber()
   @Min(0)
   @Max(1)
   isTermsAccepted?: number;
 
+  @IsOptional()
   @IsNumber()
   @Min(0)
   @Max(1)

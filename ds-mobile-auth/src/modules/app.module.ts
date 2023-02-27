@@ -2,9 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from '../controllers/auth.controller';
-import { AuthService } from '../services/auth.service';
-import { HttpModule } from '@nestjs/axios';
-import { BeelineService } from '../beeline/beeline.service';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
@@ -55,6 +52,7 @@ import { BeelineModule } from '../beeline/beeline.module';
     }),
     EventEmitterModule.forRoot(),
     TypeOrmModule.forRootAsync({
+      name: POSTGRES_DB_CONNECTION,
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         name: POSTGRES_DB_CONNECTION,
@@ -87,7 +85,7 @@ import { BeelineModule } from '../beeline/beeline.module';
     AuthModule,
     BeelineModule,
   ],
-  controllers: [AuthController],
+  controllers: [],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

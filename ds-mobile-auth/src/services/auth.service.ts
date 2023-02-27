@@ -40,7 +40,7 @@ export class AuthService {
     private readonly beelineService: BeelineService,
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly eventEmitter: EventEmitter2,
-   // private readonly clientService: ClientService,
+    private readonly clientService: ClientService,
   ) {}
 
   /**
@@ -80,7 +80,7 @@ export class AuthService {
    */
   public async signUp(authRequest: OtpVerificationRequestDto) {
     const clientResponse: SuccessClietAuthDto = new SuccessClietAuthDto();
-    /*
+
     const client: VerifyClientRepsonseDto = await this.checkExistingClient(
       authRequest.phone,
     );
@@ -110,22 +110,17 @@ export class AuthService {
       const authorizedClient: AuthorizedClientResponseDto =
         await this.registerClient(authRequest.phone, promo);
 
+      const formattedPhone: string = formatPhoneUtil(authRequest.phone);
 
-     */
+      const clientPayload: ICreateClientEvent = {
+        name: formatNameUtil(formattedPhone),
+        phone: formattedPhone,
+        correctPhone: authRequest.phone,
+        clientTypeId: 2,
+        isTermsAccepted: authRequest.isTermsAccepted,
+        isLetterAccepted: authRequest.isLetterAccepted,
+      };
 
-    const formattedPhone: string = formatPhoneUtil(authRequest.phone);
-
-    const clientPayload: ICreateClientEvent = {
-      name: formatNameUtil(formattedPhone),
-      phone: formattedPhone,
-      correctPhone: authRequest.phone,
-      clientTypeId: 2,
-      isTermsAccepted: authRequest.isTermsAccepted,
-      isLetterAccepted: authRequest.isLetterAccepted,
-    };
-
-    this.eventEmitter.emit('client.created', clientPayload);
-    /*
       const apiKey: ApiKeyResponseDto = await this.assignClientApiKey(
         authorizedClient.clientId,
       );
@@ -136,13 +131,11 @@ export class AuthService {
       this.logger.log(
         `Success user registration PHONE: ${authRequest.phone} TermsAccepted: ${authRequest.isTermsAccepted}, Promo: ${authRequest.promoCode}`,
       );
+      this.eventEmitter.emit('client.created', clientPayload);
       return Object.assign(clientResponse, authorizedClient, apiKey);
     } catch (e) {
       throw new AuthHttpException(['Failed to register new client']);
     }
-    
- */
-    return { code: 200 };
   }
 
   @OnEvent('client.created', { async: true })
@@ -159,7 +152,7 @@ export class AuthService {
     client.isLetterAccepted = payload.isLetterAccepted;
     client.isTermsAccepted = payload.isTermsAccepted;
 
-   // await this.clientService.create(client);
+    await this.clientService.create(client);
   }
 
   /**
