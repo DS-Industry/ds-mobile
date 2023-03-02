@@ -35,7 +35,9 @@ export class ExternalService {
     data: GetActiveExternalSessionDto,
   ): Promise<GetActiveExternalSessionResponseDto> {
     const { clientId, phone } = data;
+
     let response: GetActiveExternalSessionResponseDto;
+
     try {
       const existingSessionData: GetExistingSessionDto = {
         clientId: clientId.toString(),
