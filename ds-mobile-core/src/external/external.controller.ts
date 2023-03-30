@@ -7,7 +7,8 @@ import {
   Get,
   HttpException,
   HttpStatus,
-  InternalServerErrorException, NotFoundException,
+  InternalServerErrorException,
+  NotFoundException,
   Post,
   Query,
   UnauthorizedException,
@@ -26,7 +27,8 @@ import { GetSubscribtionStatusHttpRequestDto } from './dto/http/get-subscribtion
 import { GetExternalSubscribtionStatusDto } from './dto/req/get-external-subscribtion-status.dto';
 import { NotAcceptableErrorException } from '../common/exceptions/not-acceptable-error.exception';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
-import {EntityNotFoundException} from "../common/exceptions/entity-not-found.exception";
+import { EntityNotFoundException } from '../common/exceptions/entity-not-found.exception';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('partner')
 export class ExternalController {
@@ -34,6 +36,7 @@ export class ExternalController {
 
   @Post('/client/session')
   @UseGuards(JwtAuthGuard)
+  @SkipThrottle(true)
   async getActiveSession(@Body() client: GetActiveSessionHttpRequestDto) {
     try {
       const data: GetActiveExternalSessionDto = {
@@ -58,6 +61,7 @@ export class ExternalController {
 
   @Post('/promo/activate')
   @UseGuards(JwtAuthGuard)
+  @SkipThrottle(true)
   async activatePartnerPromo(
     @Body() client: ActivatePartnerPromoHttpRequestDto,
   ) {
@@ -86,6 +90,7 @@ export class ExternalController {
 
   @Get('client/subscribtion')
   @UseGuards(JwtAuthGuard)
+  @SkipThrottle(true)
   async getSubscribtionStatus(
     @Query() client: GetSubscribtionStatusHttpRequestDto,
   ) {
@@ -108,7 +113,7 @@ export class ExternalController {
         throw new HttpException(e.message, HttpStatus.NOT_ACCEPTABLE);
       } else if (e instanceof EntityNotFoundException) {
         throw new NotFoundException(e, e.message);
-    } else {
+      } else {
         throw new InternalServerErrorException(e, e.message);
       }
     }

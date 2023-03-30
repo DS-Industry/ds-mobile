@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { GazpromRepository } from './gazprom.repository';
 import { GetExistingSessionDto } from './dto/req/get-existing-session.dto';
 import { ExistingSessionDto } from './dto/core/existing-session.dto';
@@ -26,18 +26,27 @@ import { SubscribtionStatus } from '../../common/enums/subscribtion-status.enum'
 import { GetExistingSessionResponseDto } from './dto/res/get-existing-session-response.dto';
 import { ExternalClientStatus } from '../../common/enums/external-client-status.enum';
 import { CreateGazpromClientResponseDto } from './dto/res/create-gazprom-client-response.dto';
+import { UpdateStatusDto } from './dto/req/update-status.dto';
+import { GazpromUpdate } from './dto/core/gazprom-update.dto';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 @Injectable()
 export class GazpormService {
-  constructor(private readonly gazpromRepository: GazpromRepository) {}
+  constructor(
+    private readonly gazpromRepository: GazpromRepository,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
+  ) {}
 
   public async getExistingSession(
     data: GetExistingSessionDto,
   ): Promise<GetExistingSessionResponseDto> {
     const { clientId } = data;
+    //create session check if user registered with gazprom
     const response: ExistingSessionDto | GazpormErrorDto =
       await this.gazpromRepository.getExistingSession(clientId);
 
+    //if api returns error throw error
     if (response instanceof GazpormErrorDto) {
       switch (response.code) {
         case 5:
@@ -58,6 +67,7 @@ export class GazpormService {
       }
     }
 
+    //form response
     const session: GetExistingSessionResponseDto = {
       token: response.token,
       clientStatus: ExternalClientStatus.EXISTING,
@@ -70,14 +80,16 @@ export class GazpormService {
     data: CreateGazpormClientDto,
   ): Promise<CreateGazpromClientResponseDto> {
     const { clientId, phone } = data;
+    //form request data
     const request: GazpromClientDto = {
       clientId: clientId,
       phone: phone,
     };
-
+    //register client in gazprom system
     const response: ExistingSessionDto | GazpormErrorDto =
       await this.gazpromRepository.createRegistrationSession(request);
 
+    //if api returns error throw error
     if (response instanceof GazpormErrorDto) {
       switch (response.code) {
         case 3:
@@ -99,6 +111,7 @@ export class GazpormService {
           break;
       }
     }
+    //form response
     const session: CreateGazpromClientResponseDto = {
       token: response.token,
       clientStatus: ExternalClientStatus.NEW,
@@ -110,9 +123,11 @@ export class GazpormService {
     data: GetSubscribtionStatusDto,
   ): Promise<GetSubscribtionStatusResponseDto> {
     const { clientId } = data;
+    //get status of the client's gazprom subscribtion
     const response: SubscribtionStatusDto | GazpormErrorDto =
       await this.gazpromRepository.getSubscriptionStatus(clientId);
 
+    //if api returns error throw error
     if (response instanceof GazpormErrorDto) {
       switch (response.code) {
         case 3:
@@ -132,7 +147,7 @@ export class GazpormService {
           break;
       }
     }
-
+    //form response
     const status: GetSubscribtionStatusResponseDto =
       new GetSubscribtionStatusResponseDto();
 
@@ -148,5 +163,56 @@ export class GazpormService {
     }
 
     return status;
+  }
+
+  public async updateStatus(
+    clientId: string,
+    data: UpdateStatusDto,
+  ): Promise<GazpromUpdate> {
+    //Update gazprom status
+    const response: GazpromUpdate | GazpormErrorDto =
+      await this.gazpromRepository.updateStatus(clientId, data);
+
+    //if api returns error log error
+    if (response instanceof GazpormErrorDto) {
+      switch (response.code) {
+        case 3:
+          this.logger.warn(
+            `Gazprom Update Error: ${BAD_REQUEST_EXTERNAL_MSG}`,
+            response,
+          );
+          return;
+          break;
+        case 16:
+          this.logger.warn(
+            `Gazprom Update Error: ${INVALID_TOKEN_EXTERNAL_MSG}`,
+            response,
+          );
+          return;
+          break;
+        case 7:
+          this.logger.warn(
+            `Gazprom Update Error: ${UNAUTHORIZED_EXTERNAL_MSG}`,
+            response,
+          );
+          return;
+          break;
+        case 5:
+          this.logger.warn(
+            `Gazprom Update Error: ${ENTITY_NOT_FOUND_MSG}`,
+            response,
+          );
+          return;
+          break;
+        default:
+          this.logger.error(
+            `Gazprom Update Error: ${INTERNAL_SERVER_ERROR}`,
+            response,
+          );
+          return;
+          break;
+      }
+    }
+    return response;
   }
 }

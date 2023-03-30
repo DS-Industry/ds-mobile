@@ -173,6 +173,18 @@ WHERE c.SEARCH_DEV_NOMER = '${card}') t`;
       runGetCardBalance[0],
     );
 
+    if (tariff.code === 'OGN') {
+      const date = new Date();
+      const transferDate: Date = new Date(
+        date.getFullYear(),
+        date.getMonth() + 1,
+        0,
+      );
+      const fromDate: Date = new Date(date.getFullYear(), date.getMonth(), 1);
+      tariff.transferDay = transferDate.toString();
+      tariff.fromDate = fromDate.toString();
+    }
+
     if (tariff.needUpMoney > tariff.spentSum) {
       tariff.restUpSum = tariff.needUpMoney - tariff.spentSum;
     } else {

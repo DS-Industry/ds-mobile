@@ -8,6 +8,9 @@ import { firstValueFrom } from 'rxjs';
 import { GazpromClientDto } from './dto/core/gazprom-client.dto';
 import { RegistrationSessionDto } from './dto/core/registration-session.dto';
 import { SubscribtionStatusDto } from './dto/core/subscribtion-status.dto';
+import { UpdateStatusDto } from './dto/req/update-status.dto';
+import { UpdateStatusResponseDto } from './dto/res/update-status-response.dto';
+import { GazpromUpdate } from './dto/core/gazprom-update.dto';
 
 @Injectable()
 export class GazpromRepository {
@@ -97,6 +100,32 @@ export class GazpromRepository {
       );
 
       return new SubscribtionStatusDto(request.data.items, request.data.count);
+    } catch (err) {
+      const { response } = err;
+      return new GazpormErrorDto(
+        response.data.code,
+        response.data.message,
+        response.data.correlation_id,
+        response.data.details,
+      );
+    }
+  }
+
+  public async updateStatus(
+    clientId: string,
+    data: UpdateStatusDto,
+  ): Promise<GazpromUpdate | GazpormErrorDto> {
+    const config = this.setHeaders();
+
+    try {
+      const request: AxiosResponse = await firstValueFrom(
+        this.httpService.patch(
+          `${this.baseUrl}/v1/partners/${this.partnerId}/clients/${clientId}`,
+          data,
+          config,
+        ),
+      );
+      return new GazpromUpdate(request.status, request.data);
     } catch (err) {
       const { response } = err;
       return new GazpormErrorDto(

@@ -22,6 +22,8 @@ import { GetExternalActivePromoResponseDto } from './dto/res/get-external-active
 import { NotAcceptableErrorException } from '../common/exceptions/not-acceptable-error.exception';
 import { GetExternalSubscribtionStatusDto } from './dto/req/get-external-subscribtion-status.dto';
 import { GetExternalSubscribtionResponseDto } from './dto/res/get-external-subscribtion-response.dto';
+import { UpdateStatusDto } from './gazporm/dto/req/update-status.dto';
+import * as moment from 'moment';
 
 @Injectable()
 export class ExternalService {
@@ -88,6 +90,22 @@ export class ExternalService {
 
     // if active change tariff
     await this.cardService.upgradeCardPromo(data.card, this.ognTariffId);
+
+
+    const date: Date = new Date(Date.now());
+
+    const updateData: UpdateStatusDto = {
+      meta: {
+        cashback_discount: '25',
+        cashback_discount_expires_at: moment(date).format('YYYY-MM-DD'),
+        offer_status: SubscribtionStatus.ACTIVE,
+      },
+    };
+
+    await this.gazpromService.updateStatus(
+      data.clientId.toString(),
+      updateData,
+    );
 
     const response: GetExternalActivePromoResponseDto = {
       promoStatus: SubscribtionStatus.ACTIVE,
