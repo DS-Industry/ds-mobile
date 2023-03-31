@@ -41,8 +41,7 @@ export class GazpromRepository {
           config,
         ),
       );
-      //TODO REMOVE COSOLE LOG
-      console.log(request);
+
       return new ExistingSessionDto(request.data.token);
     } catch (err) {
       const { response } = err;
