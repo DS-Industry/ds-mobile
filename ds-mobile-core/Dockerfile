@@ -10,7 +10,7 @@ RUN yum update -y && \
     yum install -y oracle-nodejs-release-el7 && \
     yum install -y nodejs && \
     yum install -y python3 && \
-    yum install -y oracle-instantclient19.10-basic && \
+    yum install -y oracle-instantclient19.3-basic && \
     yum clean all && \
     node --version && \
     npm --version && \

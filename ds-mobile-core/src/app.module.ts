@@ -16,9 +16,10 @@ import { Logtail } from '@logtail/node';
 import { LogtailTransport } from '@logtail/winston';
 import { ClientModule } from './client/client.module';
 import { Client } from './client/model/client.model';
-import { AutomapperModule } from '@automapper/nestjs';
-import { classes } from '@automapper/classes';
+
 import { Apikey } from './client/model/apikey.model';
+import { ExternalModule } from './external/external.module';
+import { PromoTariff } from './common/models/promo-tariff.model';
 
 @Module({
   imports: [
@@ -41,7 +42,7 @@ import { Apikey } from './client/model/apikey.model';
         password: configService.get('DB_PASSWORD'),
         sid: configService.get('DB_SID'),
         synchronize: false,
-        entities: [Card, VCardOper, Client, Apikey],
+        entities: [Card, VCardOper, Client, Apikey, PromoTariff],
       }),
       inject: [ConfigService],
     }),
@@ -72,6 +73,7 @@ import { Apikey } from './client/model/apikey.model';
     EquipmentModule,
     HttpModule,
     ClientModule,
+    ExternalModule,
   ],
   controllers: [],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

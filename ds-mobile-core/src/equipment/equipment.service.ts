@@ -19,6 +19,7 @@ export class EquipmentService {
   ): Promise<Observable<any>> {
     const options: any = this.setHeaders();
     const body = startEquipmentReq;
+    body['GVLSource'] = 318;
     return this.httpService
       .post(
         `${this.configService.get<string>(

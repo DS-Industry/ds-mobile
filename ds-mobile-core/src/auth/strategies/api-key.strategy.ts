@@ -3,7 +3,6 @@ import { PassportStrategy } from '@nestjs/passport';
 import { HeaderAPIKeyStrategy } from 'passport-headerapikey';
 import { AuthService } from '../auth.service';
 
-
 @Injectable()
 export class ApiKeyStrategy extends PassportStrategy(
   HeaderAPIKeyStrategy,
@@ -23,6 +22,6 @@ export class ApiKeyStrategy extends PassportStrategy(
 
     if (!client) return done(new UnauthorizedException(), false);
 
-    done(null, true);
+    done(null, client);
   }
 }
