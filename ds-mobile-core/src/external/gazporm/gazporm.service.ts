@@ -151,10 +151,7 @@ export class GazpormService {
     const status: GetSubscribtionStatusResponseDto =
       new GetSubscribtionStatusResponseDto();
 
-    if (
-      response.count == 1 &&
-      response.items[0].status == 'USER_PROMOTION_STATUS_ACTIVE'
-    ) {
+    if (response.count > 0) {
       status.status = SubscribtionStatus.ACTIVE;
       status.expirationAt = new Date(response.items[0].expiration_at);
     } else {
