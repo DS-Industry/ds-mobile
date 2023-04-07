@@ -25,9 +25,7 @@ import { SkipThrottle } from '@nestjs/throttler';
 @Controller('card')
 @UseInterceptors(ClassSerializerInterceptor)
 export class CardController {
-  constructor(
-    private readonly cardService: CardService,
-  ) {}
+  constructor(private readonly cardService: CardService) {}
 
   @Get('/balance')
   @HttpCode(200)

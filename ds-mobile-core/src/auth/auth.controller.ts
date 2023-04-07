@@ -18,6 +18,8 @@ export class AuthController {
       tokenId: getAccessTokenRequest.token_id,
       card: getAccessTokenRequest.card,
     };
-    return this.authService.signToken(payload);
+    const { user } = req;
+    const token = await this.authService.signToken(payload);
+    return { clientId: user.clientId, ...token };
   }
 }

@@ -1,7 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Between, Repository } from 'typeorm';
-import * as oracledb from 'oracledb';
+import { Between, DataSource, Repository, UpdateResult } from 'typeorm';
 import { CardBalanceResponse } from './dto/res/card-balance-response.dto';
 import { CardTariffResponse } from './dto/res/card-tariff-response.dto';
 import { VCardOper } from '../common/models/v-card-oper.model';
@@ -14,6 +13,15 @@ import {
 } from './pdf/pft-file-outline';
 import { CardOperationsPdfRequestDto } from './dto/req/card-operations-pdf-request.dto';
 import { Card } from './model/card.model';
+import { UpdateCardRequestDto } from './dto/req/update-card-request.dto';
+import { EntityNotFoundException } from '../common/exceptions/entity-not-found.exception';
+import {
+  ENTITY_NOT_FOUND_MSG,
+  INTERNAL_SERVER_ERROR,
+  INVALID_TOKEN_EXTERNAL_MSG,
+} from '../common/constants';
+import { PromoTariff } from '../common/models/promo-tariff.model';
+import { SubscribtionStatus } from '../common/enums/subscribtion-status.enum';
 
 @Injectable()
 export class CardService {
@@ -21,6 +29,8 @@ export class CardService {
     @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(Card) private cardRepository: Repository<Card>,
     @InjectRepository(VCardOper) private vCardRepository: Repository<VCardOper>,
+    @InjectRepository(PromoTariff)
+    private readonly promoTariffRepository: Repository<PromoTariff>,
   ) {}
 
   public async getCardBalance(
@@ -163,6 +173,18 @@ WHERE c.SEARCH_DEV_NOMER = '${card}') t`;
       runGetCardBalance[0],
     );
 
+    if (tariff.code === 'OGN') {
+      const date = new Date();
+      const transferDate: Date = new Date(
+        date.getFullYear(),
+        date.getMonth() + 1,
+        0,
+      );
+      const fromDate: Date = new Date(date.getFullYear(), date.getMonth(), 1);
+      tariff.transferDay = transferDate.toString();
+      tariff.fromDate = fromDate.toString();
+    }
+
     if (tariff.needUpMoney > tariff.spentSum) {
       tariff.restUpSum = tariff.needUpMoney - tariff.spentSum;
     } else {
@@ -176,5 +198,109 @@ WHERE c.SEARCH_DEV_NOMER = '${card}') t`;
     }
 
     return tariff;
+  }
+
+  public async update(unqNumber: string, data: UpdateCardRequestDto) {
+    const card = await this.cardRepository.update(
+      { devNomer: unqNumber },
+      data,
+    );
+    return card;
+  }
+
+  public async upgradeCardPromo(
+    unqNumber: string,
+    upPromoId: number,
+  ): Promise<{ updTariffId: number; status: string }> {
+    const card: Card = await this.cardRepository.findOne({
+      where: {
+        devNomer: unqNumber,
+      },
+    });
+
+    if (!card) throw new EntityNotFoundException(ENTITY_NOT_FOUND_MSG);
+
+    const promo = this.promoTariffRepository.create({
+      cardId: card.cardId,
+      promoTariffId: upPromoId,
+      baseTariffId: card.cardTypeId,
+      beginDate: new Date(Date.now()),
+      status: SubscribtionStatus.ACTIVE,
+    });
+
+    const newPromo: PromoTariff = await this.promoTariffRepository.save(promo);
+
+    const cardUpdateRes: UpdateResult = await this.cardRepository.update(
+      { cardId: card.cardId },
+      { cardTypeId: upPromoId },
+    );
+
+    if (!newPromo.id && cardUpdateRes.affected == 0)
+      throw new InternalServerErrorException(
+        `${INTERNAL_SERVER_ERROR} tariff_upgrade_fail`,
+      );
+
+    return { updTariffId: newPromo.id, status: newPromo.status };
+  }
+
+  public async downgradeCardPromo(
+    unqNumber: string,
+  ): Promise<{ updTariffId: number; status: string }> {
+    const card: Card = await this.cardRepository.findOne({
+      where: {
+        devNomer: unqNumber,
+      },
+    });
+
+    if (!card) throw new EntityNotFoundException(ENTITY_NOT_FOUND_MSG);
+
+    const existingPromo: PromoTariff = await this.promoTariffRepository.findOne(
+      {
+        where: {
+          cardId: card.cardId,
+          status: SubscribtionStatus.ACTIVE,
+        },
+      },
+    );
+
+    if (!existingPromo) throw new EntityNotFoundException(ENTITY_NOT_FOUND_MSG);
+
+    const baseTariff = existingPromo.baseTariffId;
+    const currentTariff = card.cardTypeId;
+
+    const cardUpdResult: UpdateResult = await this.cardRepository.update(
+      { cardId: card.cardId },
+      {
+        cardTypeId: baseTariff,
+      },
+    );
+
+    const promoTariffResult: UpdateResult =
+      await this.promoTariffRepository.update(
+        { id: existingPromo.id },
+        {
+          endDate: new Date(Date.now()),
+          status: SubscribtionStatus.END,
+        },
+      );
+
+    if (promoTariffResult.affected == 0 || cardUpdResult.affected == 0)
+      throw new InternalServerErrorException(
+        `${INTERNAL_SERVER_ERROR} tariff_downgrade_fail`,
+      );
+
+    return { updTariffId: currentTariff, status: SubscribtionStatus.END };
+  }
+
+  public async findOneByDevNomer(uqnNumber: string) {
+    const card: Card = await this.cardRepository.findOne({
+      where: {
+        devNomer: uqnNumber,
+      },
+    });
+
+    if (!card) throw new EntityNotFoundException(ENTITY_NOT_FOUND_MSG);
+
+    return card;
   }
 }

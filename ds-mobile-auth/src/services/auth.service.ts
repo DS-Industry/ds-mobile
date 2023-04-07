@@ -224,6 +224,7 @@ export class AuthService {
    * @param otp
    * @private
    */
+
   /*
   public async validateOtp(otpVerificationRequest: OtpVerificationRequestDto) {
     const { phone, otp } = otpVerificationRequest;
@@ -413,6 +414,7 @@ export class AuthService {
 
     return Object.assign(verifyClientDto, JSON.parse(runClientVerification[0]));
   }
+
   /**
    * Verify existing otp in the database
    * @param phone
