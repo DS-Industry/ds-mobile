@@ -150,7 +150,7 @@ export class AuthService {
     client.genderId = payload.genderId ?? null;
     client.clientTypeId = payload.clientTypeId;
     client.birthday = payload.birthday ?? null;
-    client.isLetterAccepted = payload.isLetterAccepted ?? 1;
+    client.isLetterAccepted = payload.isLetterAccepted;
     client.isTermsAccepted = payload.isTermsAccepted;
 
     await this.clientService.create(client);
