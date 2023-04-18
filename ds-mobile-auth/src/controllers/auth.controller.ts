@@ -10,6 +10,7 @@ import { AuthRequestDto } from '../dto/req/authentification-request.dto';
 import { OtpVerificationRequestDto } from '../dto/req/otp-verification-request.dto';
 import { Throttle } from '@nestjs/throttler';
 import { WebActivateRequest } from '../dto/req/web-activate-request.dto';
+import { SignInRequestDto } from '../dto/req/sign-in-request.dto';
 
 @Controller()
 @UseInterceptors(ClassSerializerInterceptor)
@@ -29,7 +30,7 @@ export class AuthController {
 
   @Throttle(5, 60)
   @Post('/signin')
-  public signIn(@Body() optVerification: OtpVerificationRequestDto) {
+  public signIn(@Body() optVerification: SignInRequestDto) {
     return this.authService.signIn(optVerification);
   }
 

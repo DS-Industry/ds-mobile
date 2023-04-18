@@ -10,7 +10,7 @@ import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.useGlobalFilters(
     new AllExceptionFilter(app.get(WINSTON_MODULE_NEST_PROVIDER)),
   );
