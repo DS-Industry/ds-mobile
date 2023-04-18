@@ -127,6 +127,7 @@ export class GazpormService {
     const response: SubscribtionStatusDto | GazpormErrorDto =
       await this.gazpromRepository.getSubscriptionStatus(clientId);
 
+    console.log(response);
     //if api returns error throw error
     if (response instanceof GazpormErrorDto) {
       switch (response.code) {
