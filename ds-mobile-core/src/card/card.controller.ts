@@ -20,7 +20,7 @@ import { CardOperationsPdfRequestDto } from './dto/req/card-operations-pdf-reque
 import { CardHeader } from './dto/req/card-header.dto';
 import { CardBalanceRequest } from './dto/req/card-balance-request.dto';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
-import { SkipThrottle } from '@nestjs/throttler';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 
 @Controller('card')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -31,21 +31,22 @@ export class CardController {
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(CacheInterceptor)
-  @SkipThrottle(true)
+  @Throttle(5, 60)
   public async getCardBalance(
     @RequestHeader(CardHeader) headers: any,
     @Query() query: CardBalanceRequest,
     @Req() req,
   ) {
-    const { card } = query;
-    return this.cardService.getCardBalance(card);
+    //const { card } = query;
+    const { devNomer } = req.user;
+    return this.cardService.getCardBalance(devNomer);
   }
 
   @Get('/operations')
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(CacheInterceptor)
-  @SkipThrottle(true)
+  @Throttle(5, 60)
   public async getTransactionStatement(
     @RequestHeader(CardHeader) headers: any,
     @Query() query: CardOperationsRequest,
@@ -61,6 +62,7 @@ export class CardController {
   @Get('/operations/pdf')
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
+  @Throttle(5, 60)
   public async getTransactionStatementPdf(
     @RequestHeader(CardHeader) headers: any,
     @Query() query: CardOperationsPdfRequestDto,

@@ -5,6 +5,7 @@ import {
   Param,
   UseFilters,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { EquipmentService } from './equipment.service';
 import { StartEquipmentRequest } from './dto/req/start-equipment-request.dto';
@@ -30,7 +31,9 @@ export class EquipmentController {
     @RequestHeader(CardHeader) headers: any,
     @Body() startEquipmentRequest: StartEquipmentRequest,
     @Param('id') id: string,
+    @Req() req,
   ) {
-    return this.equipmentService.start(startEquipmentRequest, id);
+    const { devNomer } = req.user;
+    return this.equipmentService.start(startEquipmentRequest, id, devNomer);
   }
 }
