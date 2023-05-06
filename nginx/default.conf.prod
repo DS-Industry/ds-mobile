@@ -1,5 +1,21 @@
+map $http_user_agent $bad_user_agent {
+  default 0;
+  "~*bot" 1;
+  "~*spider" 1;
+  "~*crawler" 1;
+  "~*wget" 1;
+  "~*curl" 1;
+  "~*mozilla/5.0 \(windows nt 10.0; win64; x64\) applewebkit/537.36 \(khtml, like gecko\) chrome/72.0.3626.109 safari/537.36" 1;
+  "~*python-requests/2.29.0" 1;
+}
+
+
 server {
     listen 5050;
+
+    if ($bad_user_agent) {
+       return 403;
+    }
 
     location /auth {
             proxy_set_header X-Real-IP $remote_addr;
