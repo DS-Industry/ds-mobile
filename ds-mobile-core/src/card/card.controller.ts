@@ -31,7 +31,7 @@ export class CardController {
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(CacheInterceptor)
-  @Throttle(5, 60)
+  @Throttle(25, 60)
   public async getCardBalance(
     @RequestHeader(CardHeader) headers: any,
     @Query() query: CardBalanceRequest,
@@ -46,7 +46,7 @@ export class CardController {
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(CacheInterceptor)
-  @Throttle(5, 60)
+  @Throttle(10, 60)
   public async getTransactionStatement(
     @RequestHeader(CardHeader) headers: any,
     @Query() query: CardOperationsRequest,
@@ -62,7 +62,7 @@ export class CardController {
   @Get('/operations/pdf')
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
-  @Throttle(5, 60)
+  @Throttle(10, 60)
   public async getTransactionStatementPdf(
     @RequestHeader(CardHeader) headers: any,
     @Query() query: CardOperationsPdfRequestDto,
