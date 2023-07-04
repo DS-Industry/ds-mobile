@@ -50,6 +50,7 @@ export class ExternalService {
       response = {
         existingClient:
           existingSession.clientStatus == ExternalClientStatus.EXISTING && true,
+        token: existingSession.token,
       };
       return response;
     } catch (e) {
@@ -68,6 +69,7 @@ export class ExternalService {
     response = {
       existingClient:
         newSession.clientStatus == ExternalClientStatus.NEW && false,
+      token: newSession.token,
     };
     return response;
   }
@@ -90,7 +92,6 @@ export class ExternalService {
 
     // if active change tariff
     await this.cardService.upgradeCardPromo(data.card, this.ognTariffId);
-
 
     const date: Date = new Date(Date.now());
 
