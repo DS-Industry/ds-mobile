@@ -17,6 +17,7 @@ import { SignInRequestDto } from '../dto/req/sign-in-request.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Throttle(1, 120)
   @Post('/send/otp')
   public sendOTP(@Body() authRequestDto: AuthRequestDto) {
     return this.authService.sendOtp(authRequestDto);
