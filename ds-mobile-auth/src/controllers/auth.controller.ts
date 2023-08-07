@@ -3,6 +3,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Post,
+  Req,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
@@ -19,7 +20,22 @@ export class AuthController {
 
   @Throttle(1, 120)
   @Post('/send/otp')
-  public sendOTP(@Body() authRequestDto: AuthRequestDto) {
+  public sendOTP(@Body() authRequestDto: AuthRequestDto, @Req() req: any) {
+    if (!req.headers['show_modal']) {
+      console.log('Security Threat');
+      console.log(req.headers);
+      return { message: 'Sucess' };
+    }
+
+    if (!req.headers['time_to_result']) {
+      console.log('Security Threat');
+      console.log(req.headers);
+      return { message: 'Sucess' };
+    }
+
+    const checkPhone = req.headers['time_to_result'];
+
+    console.log(checkPhone);
     return this.authService.sendOtp(authRequestDto);
   }
 
