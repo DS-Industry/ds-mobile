@@ -30,14 +30,18 @@ export class AuthController {
   public sendOTP(@Body() authRequestDto: AuthRequestDto, @Req() req: any) {
     if (!req.headers['show_modal']) {
       this.logger.warn(
-        `OTP debug missing header [show_modal]: Headers: ${req.headers} Phone: ${authRequestDto.phone}`,
+        `OTP debug missing header [show_modal]: Headers: ${JSON.stringify(
+          req.headers,
+        )} Phone: ${authRequestDto.phone}`,
       );
       return { message: 'Sucess' };
     }
 
     if (!req.headers['time_to_result']) {
       this.logger.warn(
-        `OTP debug missing header [show_modal]: Headers: ${req.headers} Phone: ${authRequestDto.phone}`,
+        `OTP debug missing header [show_modal]: Headers: ${JSON.stringify(
+          req.headers,
+        )} Phone: ${authRequestDto.phone}`,
       );
       return { message: 'Sucess' };
     }
