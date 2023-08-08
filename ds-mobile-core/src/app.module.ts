@@ -9,7 +9,7 @@ import * as winston from 'winston';
 import { Card } from './card/model/card.model';
 import { VCardOper } from './common/models/v-card-oper.model';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import {APP_GUARD, APP_INTERCEPTOR} from '@nestjs/core';
 import { EquipmentModule } from './equipment/equipment.module';
 import { HttpModule } from '@nestjs/axios';
 import { Logtail } from '@logtail/node';

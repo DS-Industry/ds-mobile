@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from '../controllers/auth.controller';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { Logtail } from '@logtail/node';
@@ -16,6 +16,7 @@ import { ClientModule } from './client.module';
 import { POSTGRES_DB_CONNECTION } from '../common/utils/constants';
 import { AuthModule } from './auth.module';
 import { BeelineModule } from '../beeline/beeline.module';
+import { LogInterceptor } from '../common/interceptor/log.interceptor';
 
 @Module({
   imports: [
@@ -86,6 +87,12 @@ import { BeelineModule } from '../beeline/beeline.module';
     BeelineModule,
   ],
   controllers: [],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LogInterceptor,
+    },
+  ],
 })
 export class AppModule {}

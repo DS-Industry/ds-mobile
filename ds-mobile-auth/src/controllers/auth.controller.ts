@@ -2,6 +2,8 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  Inject,
+  LoggerService,
   Post,
   Req,
   UseInterceptors,
@@ -12,30 +14,33 @@ import { OtpVerificationRequestDto } from '../dto/req/otp-verification-request.d
 import { Throttle } from '@nestjs/throttler';
 import { WebActivateRequest } from '../dto/req/web-activate-request.dto';
 import { SignInRequestDto } from '../dto/req/sign-in-request.dto';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 @Controller()
 @UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
+  ) {}
 
-  @Throttle(1, 120)
+  @Throttle(1, 60)
   @Post('/send/otp')
   public sendOTP(@Body() authRequestDto: AuthRequestDto, @Req() req: any) {
     if (!req.headers['show_modal']) {
-      console.log('Security Threat');
-      console.log(req.headers);
+      this.logger.warn(
+        `OTP debug missing header [show_modal]: Headers: ${req.headers} Phone: ${authRequestDto.phone}`,
+      );
       return { message: 'Sucess' };
     }
 
     if (!req.headers['time_to_result']) {
-      console.log('Security Threat');
-      console.log(req.headers);
+      this.logger.warn(
+        `OTP debug missing header [show_modal]: Headers: ${req.headers} Phone: ${authRequestDto.phone}`,
+      );
       return { message: 'Sucess' };
     }
-
-    const checkPhone = req.headers['time_to_result'];
-
-    console.log(checkPhone);
     return this.authService.sendOtp(authRequestDto);
   }
 
