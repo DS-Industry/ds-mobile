@@ -1,4 +1,6 @@
 import {
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   LoggerService,
@@ -30,6 +32,7 @@ import { formatNameUtil } from '../common/utils/format-name.util';
 import { formatPhoneUtil } from '../common/utils/format-phone.util';
 import { ICreateClientEvent } from '../common/inteface/create-client.event';
 import { ClientService } from './client.service';
+import { HttpErrorByCode } from '@nestjs/common/utils/http-error-by-code.util';
 
 @Injectable()
 export class AuthService {
@@ -47,8 +50,28 @@ export class AuthService {
    * Send OTP code to the phone number provided in parameters
    * @param otpRequestDto
    */
-  public async sendOtp(authRequestDto: AuthRequestDto) {
+  public async sendOtp(
+    authRequestDto: AuthRequestDto,
+    secret: string,
+    showModal: string,
+  ) {
     const { phone } = authRequestDto;
+    const dataToHash = `${showModal}${phone}`;
+
+    // create HMAC
+    const secretCode = this.configService.get<string>('SECRET');
+    const hashedData = crypto
+      .createHmac('sha256', secretCode)
+      .update(dataToHash)
+      .digest('hex');
+
+    if (hashedData !== secret) {
+      throw new HttpException(
+        'something went wrong...',
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+
     // 1 - generate otp code
     const otp = this.generateOtp();
     const message = `Ваш код ${otp}`;

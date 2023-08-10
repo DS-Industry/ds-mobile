@@ -28,7 +28,10 @@ export class AuthController {
   @Throttle(1, 60)
   @Post('/send/otp')
   public sendOTP(@Body() authRequestDto: AuthRequestDto, @Req() req: any) {
-    if (!req.headers['show_modal']) {
+    // set headers to a variable
+    const showModal = req.headers['show_modal'];
+    const timeToResult = req.headers['time_to_result'];
+    if (!showModal) {
       this.logger.warn(
         `OTP debug missing header [show_modal]: Headers: ${JSON.stringify(
           req.headers,
@@ -37,7 +40,7 @@ export class AuthController {
       return { message: 'Sucess' };
     }
 
-    if (!req.headers['time_to_result']) {
+    if (!timeToResult) {
       this.logger.warn(
         `OTP debug missing header [show_modal]: Headers: ${JSON.stringify(
           req.headers,
@@ -45,7 +48,7 @@ export class AuthController {
       );
       return { message: 'Sucess' };
     }
-    return this.authService.sendOtp(authRequestDto);
+    return this.authService.sendOtp(authRequestDto, timeToResult, showModal);
   }
 
   @Throttle(5, 60)
