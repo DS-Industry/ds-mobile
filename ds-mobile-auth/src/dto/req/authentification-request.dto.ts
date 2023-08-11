@@ -13,5 +13,7 @@ export class AuthRequestDto {
     message: 'Phone number must be valid',
   })
   phone: string;
-
+  @IsString()
+  @IsNotEmpty()
+  token: string;
 }

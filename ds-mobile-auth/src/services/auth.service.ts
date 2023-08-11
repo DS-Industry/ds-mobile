@@ -32,7 +32,7 @@ import { formatNameUtil } from '../common/utils/format-name.util';
 import { formatPhoneUtil } from '../common/utils/format-phone.util';
 import { ICreateClientEvent } from '../common/inteface/create-client.event';
 import { ClientService } from './client.service';
-import { HttpErrorByCode } from '@nestjs/common/utils/http-error-by-code.util';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class AuthService {
@@ -44,6 +44,7 @@ export class AuthService {
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly eventEmitter: EventEmitter2,
     private readonly clientService: ClientService,
+    private readonly httpService: HttpService,
   ) {}
 
   /**
@@ -55,8 +56,25 @@ export class AuthService {
     secret: string,
     showModal: string,
   ) {
-    const { phone } = authRequestDto;
+    const { phone, token } = authRequestDto;
     const dataToHash = `${showModal}${phone}`;
+
+    const hCaptchaKey = this.configService.get<string>('HCAPTCHA_SECRET_KEY');
+    const hCaptchaUrl = this.configService.get<string>('HCAPTCHA_URL');
+
+    const hCaptchaCheckedData = {
+      hCaptchaKey,
+      token,
+    };
+
+    const response: any = await this.httpService.post(
+      hCaptchaUrl,
+      hCaptchaCheckedData,
+    );
+
+    if (!response.data.success) {
+      throw new UnauthorizedException('Internal authentication error');
+    }
 
     // create HMAC
     const secretCode = this.configService.get<string>('SECRET');
