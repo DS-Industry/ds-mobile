@@ -33,6 +33,7 @@ import { formatPhoneUtil } from '../common/utils/format-phone.util';
 import { ICreateClientEvent } from '../common/inteface/create-client.event';
 import { ClientService } from './client.service';
 import { HttpService } from '@nestjs/axios';
+import { firstValueFrom, lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class AuthService {
@@ -62,17 +63,14 @@ export class AuthService {
     const hCaptchaKey = this.configService.get<string>('HCAPTCHA_SECRET_KEY');
     const hCaptchaUrl = this.configService.get<string>('HCAPTCHA_URL');
 
-    const hCaptchaCheckedData = {
-      hCaptchaKey,
-      token,
-    };
-
-    const response: any = await this.httpService.post(
-      hCaptchaUrl,
-      hCaptchaCheckedData,
+    const hResponse: any = await firstValueFrom(
+      this.httpService.post(
+        hCaptchaUrl,
+        `secret=${hCaptchaKey}&response=${token}`,
+      ),
     );
 
-    if (!response.data.success) {
+    if (!hResponse.data.success) {
       throw new UnauthorizedException('Internal authentication error');
     }
 
