@@ -62,6 +62,7 @@ export class AuthService {
     const dataToHash = `${showModal}${phone}`;
 
     // create HMAC
+    /*
     const secretCode = this.configService.get<string>('SECRET');
     console.log(`In code: secretCode -> ${secretCode}`);
     console.log(`In code: Secret Key -> ${this.secretKey}`);
@@ -78,6 +79,8 @@ export class AuthService {
         HttpStatus.BAD_GATEWAY,
       );
     }
+    *
+     */
 
     // 1 - generate otp code
     const otp = this.generateOtp();
