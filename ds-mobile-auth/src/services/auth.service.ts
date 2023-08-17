@@ -36,6 +36,7 @@ import { HttpErrorByCode } from '@nestjs/common/utils/http-error-by-code.util';
 
 @Injectable()
 export class AuthService {
+  private secretKey;
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: LoggerService,
@@ -44,7 +45,9 @@ export class AuthService {
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly eventEmitter: EventEmitter2,
     private readonly clientService: ClientService,
-  ) {}
+  ) {
+    this.secretKey = configService.get<string>('SECRET');
+  }
 
   /**
    * Send OTP code to the phone number provided in parameters
@@ -60,12 +63,12 @@ export class AuthService {
 
     // create HMAC
     const secretCode = this.configService.get<string>('SECRET');
-    console.log(secretCode);
+    console.log(`In code: secretCode -> ${secretCode}`);
+    console.log(`In code: Secret Key -> ${this.secretKey}`);
     const hashedData = crypto
-      .createHmac('sha256', secretCode)
+      .createHmac('sha256', this.secretKey)
       .update(dataToHash)
       .digest('hex');
-
 
     console.log(hashedData);
 
