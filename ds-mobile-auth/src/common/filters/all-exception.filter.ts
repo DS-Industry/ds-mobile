@@ -64,7 +64,6 @@ export class AllExceptionFilter implements ExceptionFilter {
       request,
       message,
     );
-
     response.status(status).json(res);
   }
   private getErrorResponse = (

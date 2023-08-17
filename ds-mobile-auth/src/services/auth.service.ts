@@ -60,10 +60,14 @@ export class AuthService {
 
     // create HMAC
     const secretCode = this.configService.get<string>('SECRET');
+    console.log(secretCode);
     const hashedData = crypto
       .createHmac('sha256', secretCode)
       .update(dataToHash)
       .digest('hex');
+
+
+    console.log(hashedData);
 
     if (hashedData !== secret) {
       throw new HttpException(
