@@ -13,7 +13,7 @@ import {
 import { AuthService } from '../services/auth.service';
 import { AuthRequestDto } from '../dto/req/authentification-request.dto';
 import { OtpVerificationRequestDto } from '../dto/req/otp-verification-request.dto';
-import { Throttle } from '@nestjs/throttler';
+import {SkipThrottle, Throttle} from '@nestjs/throttler';
 import { WebActivateRequest } from '../dto/req/web-activate-request.dto';
 import { SignInRequestDto } from '../dto/req/sign-in-request.dto';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -78,9 +78,10 @@ export class AuthController {
     return this.authService.webActivate(webActivateRequest);
   }
 
+  @SkipThrottle()
   @Get('captcha')
   public async getCaptcha(@Res() res: Response) {
-    const filePath = join(__dirname, 'html', 'index.html');
+    const filePath = join(__dirname, '..', '..', 'html', 'index.html');
     res.sendFile(filePath);
   }
 }
