@@ -2,10 +2,12 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  Get,
   Inject,
   LoggerService,
   Post,
   Req,
+  Res,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
@@ -15,6 +17,8 @@ import { Throttle } from '@nestjs/throttler';
 import { WebActivateRequest } from '../dto/req/web-activate-request.dto';
 import { SignInRequestDto } from '../dto/req/sign-in-request.dto';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Response } from 'express';
+import { join } from 'path';
 
 @Controller()
 @UseInterceptors(ClassSerializerInterceptor)
@@ -72,5 +76,11 @@ export class AuthController {
   @Post('web/activate')
   public webActivate(@Body() webActivateRequest: WebActivateRequest) {
     return this.authService.webActivate(webActivateRequest);
+  }
+
+  @Get('captcha')
+  public async getCaptcha(@Res() res: Response) {
+    const filePath = join(__dirname, 'html', 'index.html');
+    res.sendFile(filePath);
   }
 }
