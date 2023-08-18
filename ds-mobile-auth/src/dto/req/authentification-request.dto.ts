@@ -15,5 +15,5 @@ export class AuthRequestDto {
   phone: string;
   @IsString()
   @IsNotEmpty()
-  token: string;
+  'h-catcha-response': string;
 }

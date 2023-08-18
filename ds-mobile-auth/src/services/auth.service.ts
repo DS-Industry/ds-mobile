@@ -57,7 +57,7 @@ export class AuthService {
     secret: string,
     showModal: string,
   ) {
-    const { phone, token } = authRequestDto;
+    const { phone, 'h-catcha-response': token } = authRequestDto;
     const dataToHash = `${showModal}${phone}`;
 
     const hCaptchaKey = this.configService.get<string>('HCAPTCHA_SECRET_KEY');
