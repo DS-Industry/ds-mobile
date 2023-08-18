@@ -14,9 +14,23 @@ async function bootstrap() {
   app.useGlobalFilters(
     new AllExceptionFilter(app.get(WINSTON_MODULE_NEST_PROVIDER)),
   );
+
+  const captchaKey = '5d525a2d-c3bd-44be-bbaf-c2717bd7e6eb';
   app.setGlobalPrefix('auth/api/v1');
   app.use(compression());
-  app.use(helmet());
+  app.use(
+    helmet.contentSecurityPolicy({
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          'https://js.hcaptcha.com',
+          `'nonce-${captchaKey}'`,
+        ],
+        frameSrc: ["'self'", 'https://newassets.hcaptcha.com'],
+      },
+    }),
+  );
   app.enable('trust proxy');
 
   //Swagger set up

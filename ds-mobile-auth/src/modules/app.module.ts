@@ -17,6 +17,7 @@ import { POSTGRES_DB_CONNECTION } from '../common/utils/constants';
 import { AuthModule } from './auth.module';
 import { BeelineModule } from '../beeline/beeline.module';
 import { LogInterceptor } from '../common/interceptor/log.interceptor';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
@@ -85,6 +86,10 @@ import { LogInterceptor } from '../common/interceptor/log.interceptor';
     ClientModule,
     AuthModule,
     BeelineModule,
+    ServeStaticModule.forRoot({
+      rootPath: path.join(__dirname, '..', '..', 'public'),
+      exclude: ['/api*'],
+    }),
   ],
   controllers: [],
   providers: [
