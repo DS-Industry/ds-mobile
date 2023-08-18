@@ -42,4 +42,9 @@ server {
                 proxy_redirect off;
 
             }
+
+    location /captcha {
+            root /usr/share/nginx/html;
+            index index.html;
+    }
 }
