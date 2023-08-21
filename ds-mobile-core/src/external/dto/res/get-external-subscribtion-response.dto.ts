@@ -2,4 +2,5 @@ import { SubscribtionStatus } from '../../../common/enums/subscribtion-status.en
 
 export class GetExternalSubscribtionResponseDto {
   promoStatus: SubscribtionStatus;
+  promoTariff?: boolean;
 }

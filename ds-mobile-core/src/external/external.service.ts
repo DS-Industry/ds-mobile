@@ -135,12 +135,14 @@ export class ExternalService {
     };
 
     if (staus.status == SubscribtionStatus.ACTIVE) {
+      response.promoTariff = true;
       return response;
     }
 
     //downgrade tarrif;
     await this.cardService.downgradeCardPromo(data.card);
 
+    response.promoTariff = false;
     return response;
   }
 }
