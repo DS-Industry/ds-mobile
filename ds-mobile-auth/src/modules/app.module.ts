@@ -16,7 +16,8 @@ import { ClientModule } from './client.module';
 import { POSTGRES_DB_CONNECTION } from '../common/utils/constants';
 import { AuthModule } from './auth.module';
 import { BeelineModule } from '../beeline/beeline.module';
-import { LogInterceptor } from '../common/interceptor/log.interceptor';
+//import { LogInterceptor } from '../common/interceptor/log.interceptor';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
@@ -85,14 +86,32 @@ import { LogInterceptor } from '../common/interceptor/log.interceptor';
     ClientModule,
     AuthModule,
     BeelineModule,
+    LoggerModule.forRoot({
+      pinoHttp: {
+        serializers: {
+          req(req) {
+            req.body = req.raw.body;
+            return req;
+          },
+        },
+        transport: {
+          target: 'pino-pretty',
+          options: {
+            levelFirst: true,
+            translateTime: 'SYS:dd/mm/yyyy, h:MM:ss.l o',
+            ingore: 'req,res',
+          },
+        },
+      },
+    }),
   ],
   controllers: [],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
-    {
+    /*     {
       provide: APP_INTERCEPTOR,
       useClass: LogInterceptor,
-    },
+    }, */
   ],
 })
 export class AppModule {}

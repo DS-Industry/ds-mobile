@@ -4,6 +4,7 @@ import {
   Controller,
   Inject,
   LoggerService,
+  Logger,
   Post,
   Req,
   UseInterceptors,
@@ -15,15 +16,12 @@ import { Throttle } from '@nestjs/throttler';
 import { WebActivateRequest } from '../dto/req/web-activate-request.dto';
 import { SignInRequestDto } from '../dto/req/sign-in-request.dto';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { QueryFailedError } from 'typeorm';
 
 @Controller()
 @UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER)
-    private readonly logger: LoggerService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Throttle(1, 60)
   @Post('/send/otp')
@@ -32,20 +30,10 @@ export class AuthController {
     const showModal = req.headers['show_modal'];
     const timeToResult = req.headers['time_to_result'];
     if (!showModal) {
-      this.logger.warn(
-        `OTP debug missing header [show_modal]: Headers: ${JSON.stringify(
-          req.headers,
-        )} Phone: ${authRequestDto.phone}`,
-      );
       return { message: 'Sucess' };
     }
 
     if (!timeToResult) {
-      this.logger.warn(
-        `OTP debug missing header [show_modal]: Headers: ${JSON.stringify(
-          req.headers,
-        )} Phone: ${authRequestDto.phone}`,
-      );
       return { message: 'Sucess' };
     }
     return this.authService.sendOtp(authRequestDto, timeToResult, showModal);

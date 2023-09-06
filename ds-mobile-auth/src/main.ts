@@ -7,13 +7,18 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import * as compression from 'compression';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
+import { Logger } from 'nestjs-pino';
+//import { LogInterceptor } from './common/interceptor/log.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+  });
+
+  app.useLogger(app.get(Logger));
+
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.useGlobalFilters(
-    new AllExceptionFilter(app.get(WINSTON_MODULE_NEST_PROVIDER)),
-  );
+  app.useGlobalFilters(new AllExceptionFilter());
   app.setGlobalPrefix('auth/api/v1');
   app.use(compression());
   app.use(helmet());
@@ -27,8 +32,11 @@ async function bootstrap() {
     .setVersion('1.0.0')
     .build();
 
+  const logger = app.get(Logger);
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('auth/api/v1/docs', app, document);
-  await app.listen(process.env.APP_PORT || 3000);
+  await app.listen(process.env.APP_PORT, () => {
+    logger.log(`App statted on port ${process.env.APP_PORT}`);
+  });
 }
 bootstrap();
