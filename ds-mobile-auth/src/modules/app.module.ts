@@ -95,12 +95,22 @@ import { LoggerModule } from 'nestjs-pino';
           },
         },
         transport: {
-          target: 'pino-pretty',
-          options: {
-            levelFirst: true,
-            translateTime: 'SYS:dd/mm/yyyy, h:MM:ss.l o',
-            ingore: 'req,res',
-          },
+          targets: [
+            {
+              target: 'pino-pretty',
+              options: {
+                levelFirst: true,
+                translateTime: 'SYS:dd/mm/yyyy, h:MM:ss.l o',
+                ingore: 'req,res',
+              },
+              level: 'info',
+            },
+            /*          {
+              target: '@logtail/pino',
+              options: { sourceToken: configService.get('LOGTAIL_TOKEN') },
+              level: 'info',
+            } */
+          ],
         },
       },
     }),
