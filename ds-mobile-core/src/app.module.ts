@@ -9,14 +9,14 @@ import * as winston from 'winston';
 import { Card } from './card/model/card.model';
 import { VCardOper } from './common/models/v-card-oper.model';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import {APP_GUARD, APP_INTERCEPTOR} from '@nestjs/core';
+import { APP_GUARD } from '@nestjs/core';
 import { EquipmentModule } from './equipment/equipment.module';
 import { HttpModule } from '@nestjs/axios';
 import { Logtail } from '@logtail/node';
 import { LogtailTransport } from '@logtail/winston';
 import { ClientModule } from './client/client.module';
 import { Client } from './client/model/client.model';
-
+import { LoggerModule } from 'nestjs-pino';
 import { Apikey } from './client/model/apikey.model';
 import { ExternalModule } from './external/external.module';
 import { PromoTariff } from './common/models/promo-tariff.model';
@@ -46,7 +46,7 @@ import { PromoTariff } from './common/models/promo-tariff.model';
       }),
       inject: [ConfigService],
     }),
-    WinstonModule.forRootAsync({
+    /* WinstonModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         format: winston.format.combine(
@@ -58,7 +58,7 @@ import { PromoTariff } from './common/models/promo-tariff.model';
         ],
       }),
       inject: [ConfigService],
-    }),
+    }), */
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -74,6 +74,38 @@ import { PromoTariff } from './common/models/promo-tariff.model';
     HttpModule,
     ClientModule,
     ExternalModule,
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        pinoHttp: {
+          autoLogging: false,
+          serializers: {
+            req(req) {
+              req.body = req.raw.body;
+              return req;
+            },
+          },
+          transport: {
+            targets: [
+              {
+                target: 'pino-pretty',
+                options: {
+                  levelFirst: true,
+                  translateTime: 'SYS:dd/mm/yyyy, h:MM:ss.l o',
+                },
+                level: 'info',
+              },
+              {
+                target: '@logtail/pino',
+                options: { sourceToken: config.get('LOGTAIL_TOKEN') },
+                level: 'info',
+              },
+            ],
+          },
+        },
+      }),
+    }),
   ],
   controllers: [],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

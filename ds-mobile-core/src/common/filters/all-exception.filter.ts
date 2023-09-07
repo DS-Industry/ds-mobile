@@ -4,19 +4,16 @@ import {
   HttpException,
   HttpStatus,
   Inject,
-  LoggerService,
+  Logger,
 } from '@nestjs/common';
 import { HttpExceptionResponse } from '../models/http-exception-response.interface';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { QueryFailedError } from 'typeorm';
 import { Request, Response } from 'express';
 
-
 export class AllExceptionFilter implements ExceptionFilter {
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER)
-    private readonly logger: LoggerService,
-  ) {}
+  private readonly logger = new Logger();
+  /*   constructor() /*  @Inject(WINSTON_MODULE_NEST_PROVIDER)  {} */
 
   catch(exception: any, host: ArgumentsHost): any {
     const ctx = host.switchToHttp();
@@ -33,19 +30,13 @@ export class AllExceptionFilter implements ExceptionFilter {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       message = exception.getResponse().message || exception.message;
-      this.logger.error(
-        `[${request.url}]: ${code}:${message}  Body: ${JSON.stringify(
-          request.body,
-        )}`,
-        exception.stack,
-        request.headers,
-      );
+      this.logger.error(`${message} `, exception.stack, request.headers);
     } else if (exception instanceof QueryFailedError) {
       status = HttpStatus.UNPROCESSABLE_ENTITY;
       code = 'UnprocessableEntityException';
       message = 'Unable to process request';
       this.logger.error(
-        `[TypeOrm]: ${exception.name} Body: ${JSON.stringify(request.body)}`,
+        `[TypeOrm]: ${exception.message}`,
         exception.stack,
         request.headers,
       );
@@ -53,13 +44,7 @@ export class AllExceptionFilter implements ExceptionFilter {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
       code = exception.name;
       message = 'Internal Server Error';
-      this.logger.error(
-        `[${request.url}]: ${code}:${message}  Body: ${JSON.stringify(
-          request.body,
-        )}`,
-        exception.stack,
-        request.headers,
-      );
+      this.logger.error(`${message} `, exception.stack, request.headers);
     }
 
     const res: HttpExceptionResponse = this.getErrorResponse(

@@ -1,4 +1,4 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable, LoggerService, Logger } from '@nestjs/common';
 import { GazpromRepository } from './gazprom.repository';
 import { GetExistingSessionDto } from './dto/req/get-existing-session.dto';
 import { ExistingSessionDto } from './dto/core/existing-session.dto';
@@ -32,10 +32,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 @Injectable()
 export class GazpormService {
+  private readonly logger = new Logger();
   constructor(
-    private readonly gazpromRepository: GazpromRepository,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER)
-    private readonly logger: LoggerService,
+    private readonly gazpromRepository: GazpromRepository /*     @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService, */,
   ) {}
 
   public async getExistingSession(

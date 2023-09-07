@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable, LoggerService, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { StartEquipmentRequest } from './dto/req/start-equipment-request.dto';
 import { catchError, map } from 'rxjs/operators';
@@ -9,11 +9,11 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 @Injectable()
 export class EquipmentService {
+  private readonly logger = new Logger();
   constructor(
     private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER)
-    private readonly logger: LoggerService,
+    private readonly configService: ConfigService /*     @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService, */,
   ) {}
 
   public async start(
