@@ -79,7 +79,6 @@ import { PromoTariff } from './common/models/promo-tariff.model';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         pinoHttp: {
-          autoLogging: false,
           serializers: {
             req(req) {
               req.body = req.raw.body;
