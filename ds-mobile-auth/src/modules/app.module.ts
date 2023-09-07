@@ -86,7 +86,38 @@ import { LoggerModule } from 'nestjs-pino';
     ClientModule,
     AuthModule,
     BeelineModule,
-    LoggerModule.forRoot({
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        pinoHttp: {
+          serializers: {
+            req(req) {
+              req.body = req.raw.body;
+              return req;
+            },
+          },
+          transport: {
+            targets: [
+              {
+                target: 'pino-pretty',
+                options: {
+                  levelFirst: true,
+                  translateTime: 'SYS:dd/mm/yyyy, h:MM:ss.l o',
+                },
+                level: 'info',
+              },
+              {
+                target: '@logtail/pino',
+                options: { sourceToken: config.get('LOGTAIL_TOKEN') },
+                level: 'info',
+              },
+            ],
+          },
+        },
+      }),
+    }),
+    /*  LoggerModule.forRoot({
       pinoHttp: {
         serializers: {
           req(req) {
@@ -105,15 +136,15 @@ import { LoggerModule } from 'nestjs-pino';
               },
               level: 'info',
             },
-            /*          {
+                      {
               target: '@logtail/pino',
               options: { sourceToken: configService.get('LOGTAIL_TOKEN') },
               level: 'info',
-            } */
+            } 
           ],
         },
       },
-    }),
+    }), */
   ],
   controllers: [],
   providers: [
