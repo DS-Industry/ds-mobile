@@ -1,10 +1,8 @@
 import {
+  BadGatewayException,
   Body,
   ClassSerializerInterceptor,
   Controller,
-  Inject,
-  LoggerService,
-  Logger,
   Post,
   Req,
   UseInterceptors,
@@ -15,8 +13,6 @@ import { OtpVerificationRequestDto } from '../dto/req/otp-verification-request.d
 import { Throttle } from '@nestjs/throttler';
 import { WebActivateRequest } from '../dto/req/web-activate-request.dto';
 import { SignInRequestDto } from '../dto/req/sign-in-request.dto';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { QueryFailedError } from 'typeorm';
 
 @Controller()
 @UseInterceptors(ClassSerializerInterceptor)
@@ -29,6 +25,7 @@ export class AuthController {
     // set headers to a variable
     const showModal = req.headers['show_modal'];
     const timeToResult = req.headers['time_to_result'];
+    throw new BadGatewayException();
     if (!showModal) {
       return { message: 'Sucess' };
     }

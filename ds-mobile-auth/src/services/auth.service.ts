@@ -1,6 +1,4 @@
 import {
-  HttpException,
-  HttpStatus,
   Inject,
   Injectable,
   LoggerService,
@@ -22,7 +20,6 @@ import { AuthHttpException } from '../common/exceptions/auth-http.exception';
 import { AuthentificationException } from '../common/exceptions/authentification.exception';
 import { AddOtpResponseDto } from '../dto/res/add-otp-response.dto';
 import { BeelineService } from '../beeline/beeline.service';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AuthorizedWebClientResponse } from '../dto/res/authorized-web-client-response.dto';
 import { WebActivateRequest } from '../dto/req/web-activate-request.dto';
 import { WebActivateResponse } from '../dto/res/web-activate-response.dto';
@@ -38,8 +35,6 @@ import { firstValueFrom, lastValueFrom } from 'rxjs';
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER)
-    private readonly logger: LoggerService,
     private readonly configService: ConfigService,
     private readonly beelineService: BeelineService,
     @InjectDataSource() private readonly dataSource: DataSource,
@@ -57,24 +52,10 @@ export class AuthService {
     secret: string,
     showModal: string,
   ) {
-    const { phone, 'h-catcha-response': token } = authRequestDto;
+    const { phone } = authRequestDto;
     const dataToHash = `${showModal}${phone}`;
 
-    const hCaptchaKey = this.configService.get<string>('HCAPTCHA_SECRET_KEY');
-    const hCaptchaUrl = this.configService.get<string>('HCAPTCHA_URL');
-
-    const hResponse: any = await firstValueFrom(
-      this.httpService.post(
-        hCaptchaUrl,
-        `secret=${hCaptchaKey}&response=${token}`,
-      ),
-    );
-
-    if (!hResponse.data.success) {
-      throw new UnauthorizedException('Internal authentication error');
-    }
-
-    // create HMAC
+    /*     // create HMAC
     const secretCode = this.configService.get<string>('SECRET');
     const hashedData = crypto
       .createHmac('sha256', secretCode)
@@ -87,7 +68,7 @@ export class AuthService {
         HttpStatus.BAD_GATEWAY,
       );
     }
-
+ */
     // 1 - generate otp code
     const otp = this.generateOtp();
     const message = `Ваш код ${otp}`;

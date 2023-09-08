@@ -3,12 +3,10 @@ import { AppModule } from './modules/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AllExceptionFilter } from './common/filters/all-exception.filter';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import * as compression from 'compression';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
-//import { LogInterceptor } from './common/interceptor/log.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {

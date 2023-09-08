@@ -1,13 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthController } from '../controllers/auth.controller';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { WinstonModule } from 'nest-winston';
-import * as winston from 'winston';
-import { Logtail } from '@logtail/node';
-import { LogtailTransport } from '@logtail/winston';
+import { APP_GUARD } from '@nestjs/core';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Client } from '../entity/client.entity';
@@ -24,19 +19,6 @@ import { LoggerModule } from 'nestjs-pino';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`,
-    }),
-    WinstonModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.json(),
-        ),
-        transports: [
-          new LogtailTransport(new Logtail(configService.get('LOGTAIL_TOKEN'))),
-        ],
-      }),
-      inject: [ConfigService],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -91,6 +73,12 @@ import { LoggerModule } from 'nestjs-pino';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         pinoHttp: {
+          customSuccessMessage(req, res) {
+            return `${req.method} [${req.url}] || ${res.statusMessage}`;
+          },
+          customErrorMessage(req, res, error) {
+            return `${req.method} [${req.url}] || ${error.message}`;
+          },
           serializers: {
             req(req) {
               req.body = req.raw.body;
@@ -98,6 +86,7 @@ import { LoggerModule } from 'nestjs-pino';
             },
           },
           transport: {
+            dedupe: true,
             targets: [
               {
                 target: 'pino-pretty',
@@ -109,50 +98,21 @@ import { LoggerModule } from 'nestjs-pino';
               },
               {
                 target: '@logtail/pino',
-                options: { sourceToken: config.get('LOGTAIL_TOKEN') },
+                options: { sourceToken: config.get('LOGTAIL_TOKEN_INFO') },
                 level: 'info',
+              },
+              {
+                target: '@logtail/pino',
+                options: { sourceToken: config.get('LOGTAIL_TOKEN') },
+                level: 'error',
               },
             ],
           },
         },
       }),
     }),
-    /*  LoggerModule.forRoot({
-      pinoHttp: {
-        serializers: {
-          req(req) {
-            req.body = req.raw.body;
-            return req;
-          },
-        },
-        transport: {
-          targets: [
-            {
-              target: 'pino-pretty',
-              options: {
-                levelFirst: true,
-                translateTime: 'SYS:dd/mm/yyyy, h:MM:ss.l o',
-                ingore: 'req,res',
-              },
-              level: 'info',
-            },
-                      {
-              target: '@logtail/pino',
-              options: { sourceToken: configService.get('LOGTAIL_TOKEN') },
-              level: 'info',
-            } 
-          ],
-        },
-      },
-    }), */
   ],
   controllers: [],
-  providers: [
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
-    /*     {
-      provide: APP_INTERCEPTOR,
-      useClass: LogInterceptor,
-    }, */
-  ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

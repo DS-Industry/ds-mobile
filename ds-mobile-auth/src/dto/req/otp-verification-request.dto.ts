@@ -10,7 +10,6 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
-import { DefaultValuePipe } from '@nestjs/common';
 
 export class OtpVerificationRequestDto {
   @IsNotEmpty({ message: 'Phone number is required' })
