@@ -15,7 +15,7 @@ export class EquipmentExceptionFilter implements ExceptionFilter {
 
     response.status(status).json(res);
     this.logger.error(
-      `${EquipmentExceptionFilter.name} `,
+      ` ${request.url} [${request.url}] || ${EquipmentExceptionFilter.name} `,
       exception.stack,
       request.headers,
     );

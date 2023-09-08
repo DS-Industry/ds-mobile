@@ -4,16 +4,12 @@ import { AuthModule } from './auth/auth.module';
 import { PayModule } from './pay/pay.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { WinstonModule } from 'nest-winston';
-import * as winston from 'winston';
 import { Card } from './card/model/card.model';
 import { VCardOper } from './common/models/v-card-oper.model';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { EquipmentModule } from './equipment/equipment.module';
 import { HttpModule } from '@nestjs/axios';
-import { Logtail } from '@logtail/node';
-import { LogtailTransport } from '@logtail/winston';
 import { ClientModule } from './client/client.module';
 import { Client } from './client/model/client.model';
 import { LoggerModule } from 'nestjs-pino';
@@ -46,19 +42,6 @@ import { PromoTariff } from './common/models/promo-tariff.model';
       }),
       inject: [ConfigService],
     }),
-    /* WinstonModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.json(),
-        ),
-        transports: [
-          new LogtailTransport(new Logtail(configService.get('LOGTAIL_TOKEN'))),
-        ],
-      }),
-      inject: [ConfigService],
-    }), */
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -79,6 +62,12 @@ import { PromoTariff } from './common/models/promo-tariff.model';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         pinoHttp: {
+          customSuccessMessage(req, res) {
+            return `${req.method} [${req.url}] || ${res.statusMessage}`;
+          },
+          customErrorMessage(req, res, error) {
+            return `${req.method} [${req.url}] || ${error.message}`;
+          },
           serializers: {
             req(req) {
               req.body = req.raw.body;
@@ -86,6 +75,7 @@ import { PromoTariff } from './common/models/promo-tariff.model';
             },
           },
           transport: {
+            dedupe: true,
             targets: [
               {
                 target: 'pino-pretty',
@@ -97,8 +87,13 @@ import { PromoTariff } from './common/models/promo-tariff.model';
               },
               {
                 target: '@logtail/pino',
-                options: { sourceToken: config.get('LOGTAIL_TOKEN') },
+                options: { sourceToken: config.get('LOGTAIL_TOKEN_INFO') },
                 level: 'info',
+              },
+              {
+                target: '@logtail/pino',
+                options: { sourceToken: config.get('LOGTAIL_TOKEN') },
+                level: 'error',
               },
             ],
           },

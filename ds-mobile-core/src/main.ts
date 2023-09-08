@@ -4,7 +4,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as compression from 'compression';
 import { AllExceptionFilter } from './common/filters/all-exception.filter';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 
@@ -14,14 +13,15 @@ async function bootstrap() {
   });
   app.useGlobalPipes(new ValidationPipe());
   app.useLogger(app.get(Logger));
-  app.useGlobalFilters(
-    new AllExceptionFilter(/* app.get(WINSTON_MODULE_NEST_PROVIDER) */),
-  );
+  app.useGlobalFilters(new AllExceptionFilter());
   app.setGlobalPrefix('core/api/v1');
   app.use(compression());
   app.use(helmet());
   app.enable('trust proxy');
 
-  await app.listen(process.env.APP_PORT || 5000);
+  const logger = app.get(Logger);
+  await app.listen(process.env.APP_PORT, () => {
+    logger.log(`App statted on port ${process.env.APP_PORT}`);
+  });
 }
 bootstrap();

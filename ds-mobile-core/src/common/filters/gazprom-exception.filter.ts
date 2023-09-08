@@ -4,8 +4,7 @@ import { GazpromException } from '../exceptions/gazprom.exception';
 
 @Catch(GazpromException)
 export class GazpromExceptionFilter implements ExceptionFilter {
-  private readonly logger = new Logger()
-  constructor() {}
+  private readonly logger = new Logger();
 
   catch(exception: any, host: ArgumentsHost): any {
     const ctx = host.switchToHttp();
@@ -14,7 +13,7 @@ export class GazpromExceptionFilter implements ExceptionFilter {
 
     console.log(exception);
     this.logger.error(
-      `${GazpromExceptionFilter.name} `,
+      `${request.method} ${request.url} || ${GazpromExceptionFilter.name} `,
       exception.stack,
       request.headers,
     );
