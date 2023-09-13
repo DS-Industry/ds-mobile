@@ -1,4 +1,4 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable, LoggerService, Logger } from '@nestjs/common';
 import { AddPaymentRequestDto } from './dto/req/add-payment-request.dto';
 import { InjectDataSource } from '@nestjs/typeorm';
 import * as oracledb from 'oracledb';
@@ -8,10 +8,11 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 @Injectable()
 export class PayService {
+  private readonly logger = new Logger();
   constructor(
-    @InjectDataSource() private readonly dataSource: DataSource,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER)
-    private readonly logger: LoggerService,
+    @InjectDataSource()
+    private readonly dataSource: DataSource /*     @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService, */,
   ) {}
 
   public async addPayment(

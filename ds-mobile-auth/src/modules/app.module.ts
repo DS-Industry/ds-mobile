@@ -3,11 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from '../controllers/auth.controller';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { WinstonModule } from 'nest-winston';
-import * as winston from 'winston';
-import { Logtail } from '@logtail/node';
-import { LogtailTransport } from '@logtail/winston';
+import { APP_GUARD } from '@nestjs/core';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Client } from '../entity/client.entity';
@@ -16,27 +12,14 @@ import { ClientModule } from './client.module';
 import { POSTGRES_DB_CONNECTION } from '../common/utils/constants';
 import { AuthModule } from './auth.module';
 import { BeelineModule } from '../beeline/beeline.module';
-import { LogInterceptor } from '../common/interceptor/log.interceptor';
-import { ServeStaticModule } from '@nestjs/serve-static';
+//import { LogInterceptor } from '../common/interceptor/log.interceptor';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`,
-    }),
-    WinstonModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.json(),
-        ),
-        transports: [
-          new LogtailTransport(new Logtail(configService.get('LOGTAIL_TOKEN'))),
-        ],
-      }),
-      inject: [ConfigService],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -86,18 +69,51 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     ClientModule,
     AuthModule,
     BeelineModule,
-    ServeStaticModule.forRoot({
-      rootPath: path.join(__dirname, '..', '..', 'public'),
-      exclude: ['/api*'],
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        pinoHttp: {
+          customSuccessMessage(req, res) {
+            return `${req.method} [${req.url}] || ${res.statusMessage}`;
+          },
+          customErrorMessage(req, res, error) {
+            return `${req.method} [${req.url}] || ${error.message}`;
+          },
+          serializers: {
+            req(req) {
+              req.body = req.raw.body;
+              return req;
+            },
+          },
+          transport: {
+            dedupe: true,
+            targets: [
+              {
+                target: 'pino-pretty',
+                options: {
+                  levelFirst: true,
+                  translateTime: 'SYS:dd/mm/yyyy, h:MM:ss.l o',
+                },
+                level: 'info',
+              },
+              {
+                target: '@logtail/pino',
+                options: { sourceToken: config.get('LOGTAIL_TOKEN_INFO') },
+                level: 'info',
+              },
+              {
+                target: '@logtail/pino',
+                options: { sourceToken: config.get('LOGTAIL_TOKEN') },
+                level: 'error',
+              },
+            ],
+          },
+        },
+      }),
     }),
   ],
   controllers: [],
-  providers: [
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: LogInterceptor,
-    },
-  ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

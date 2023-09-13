@@ -1,6 +1,4 @@
 import {
-  HttpException,
-  HttpStatus,
   Inject,
   Injectable,
   LoggerService,
@@ -22,7 +20,6 @@ import { AuthHttpException } from '../common/exceptions/auth-http.exception';
 import { AuthentificationException } from '../common/exceptions/authentification.exception';
 import { AddOtpResponseDto } from '../dto/res/add-otp-response.dto';
 import { BeelineService } from '../beeline/beeline.service';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AuthorizedWebClientResponse } from '../dto/res/authorized-web-client-response.dto';
 import { WebActivateRequest } from '../dto/req/web-activate-request.dto';
 import { WebActivateResponse } from '../dto/res/web-activate-response.dto';
@@ -32,22 +29,19 @@ import { formatNameUtil } from '../common/utils/format-name.util';
 import { formatPhoneUtil } from '../common/utils/format-phone.util';
 import { ICreateClientEvent } from '../common/inteface/create-client.event';
 import { ClientService } from './client.service';
-import { HttpErrorByCode } from '@nestjs/common/utils/http-error-by-code.util';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom, lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class AuthService {
-  private secretKey;
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER)
-    private readonly logger: LoggerService,
     private readonly configService: ConfigService,
     private readonly beelineService: BeelineService,
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly eventEmitter: EventEmitter2,
     private readonly clientService: ClientService,
-  ) {
-    this.secretKey = configService.get<string>('SECRET');
-  }
+    private readonly httpService: HttpService,
+  ) {}
 
   /**
    * Send OTP code to the phone number provided in parameters
@@ -61,17 +55,12 @@ export class AuthService {
     const { phone } = authRequestDto;
     const dataToHash = `${showModal}${phone}`;
 
-    // create HMAC
-    /*
+    /*     // create HMAC
     const secretCode = this.configService.get<string>('SECRET');
-    console.log(`In code: secretCode -> ${secretCode}`);
-    console.log(`In code: Secret Key -> ${this.secretKey}`);
     const hashedData = crypto
-      .createHmac('sha256', this.secretKey)
+      .createHmac('sha256', secretCode)
       .update(dataToHash)
       .digest('hex');
-
-    console.log(hashedData);
 
     if (hashedData !== secret) {
       throw new HttpException(
@@ -79,9 +68,7 @@ export class AuthService {
         HttpStatus.BAD_GATEWAY,
       );
     }
-    *
-     */
-
+ */
     // 1 - generate otp code
     const otp = this.generateOtp();
     const message = `Ваш код ${otp}`;
