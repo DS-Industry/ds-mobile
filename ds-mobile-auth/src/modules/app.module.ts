@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthController } from '../controllers/auth.controller';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import * as path from 'path';
@@ -73,43 +72,68 @@ import { LoggerModule } from 'nestjs-pino';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        pinoHttp: {
-          customSuccessMessage(req, res) {
-            return `${req.method} [${req.url}] || ${res.statusMessage}`;
-          },
-          customErrorMessage(req, res, error) {
-            return `${req.method} [${req.url}] || ${error.message}`;
-          },
-          serializers: {
-            req(req) {
-              req.body = req.raw.body;
-              return req;
-            },
-          },
-          transport: {
-            dedupe: true,
-            targets: [
-              {
-                target: 'pino-pretty',
-                options: {
-                  levelFirst: true,
-                  translateTime: 'SYS:dd/mm/yyyy, h:MM:ss.l o',
+        pinoHttp:
+          process.env.NODE_ENV === 'development'
+            ? {
+                serializers: {
+                  req(req) {
+                    req.body = req.raw.body;
+                    return req;
+                  },
                 },
-                level: 'info',
+                transport: {
+                  dedupe: true,
+                  targets: [
+                    {
+                      target: 'pino-pretty',
+                      options: {
+                        levelFirst: true,
+                        translateTime: 'SYS:dd/mm/yyyy, h:MM:ss.l o',
+                      },
+                      level: 'info',
+                    },
+                  ],
+                },
+              }
+            : {
+                customSuccessMessage(req, res) {
+                  return `${req.method} [${req.url}] || ${res.statusMessage}`;
+                },
+                customErrorMessage(req, res, error) {
+                  return `${req.method} [${req.url}] || ${error.message}`;
+                },
+                serializers: {
+                  req(req) {
+                    req.body = req.raw.body;
+                    return req;
+                  },
+                },
+                transport: {
+                  dedupe: true,
+                  targets: [
+                    {
+                      target: 'pino-pretty',
+                      options: {
+                        levelFirst: true,
+                        translateTime: 'SYS:dd/mm/yyyy, h:MM:ss.l o',
+                      },
+                      level: 'info',
+                    },
+                    {
+                      target: '@logtail/pino',
+                      options: {
+                        sourceToken: config.get('LOGTAIL_TOKEN_INFO'),
+                      },
+                      level: 'info',
+                    },
+                    {
+                      target: '@logtail/pino',
+                      options: { sourceToken: config.get('LOGTAIL_TOKEN') },
+                      level: 'error',
+                    },
+                  ],
+                },
               },
-              {
-                target: '@logtail/pino',
-                options: { sourceToken: config.get('LOGTAIL_TOKEN_INFO') },
-                level: 'info',
-              },
-              {
-                target: '@logtail/pino',
-                options: { sourceToken: config.get('LOGTAIL_TOKEN') },
-                level: 'error',
-              },
-            ],
-          },
-        },
       }),
     }),
   ],
