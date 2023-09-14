@@ -22,10 +22,8 @@ export class AuthController {
   @Throttle(1, 60)
   @Post('/send/otp')
   public sendOTP(@Body() authRequestDto: AuthRequestDto, @Req() req: any) {
-    // set headers to a variable
     const showModal = req.headers['show_modal'];
     const timeToResult = req.headers['time_to_result'];
-    throw new BadGatewayException();
     if (!showModal) {
       return { message: 'Sucess' };
     }
