@@ -21,7 +21,12 @@ export class AuthController {
       card: getAccessTokenRequest.card,
     };
     const { user } = req;
-    const token = await this.authService.signToken(payload);
-    return { clientId: user.clientId, ...token };
+
+    try {
+      const token = await this.authService.signToken(payload);
+      return { clientId: user.clientId, ...token };
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
