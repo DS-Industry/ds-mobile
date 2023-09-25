@@ -114,7 +114,6 @@ export class ExternalController {
       } else if (e instanceof EntityNotFoundException) {
         throw new NotFoundException(e, e.message);
       } else {
-        console.log(e);
         throw new InternalServerErrorException(e, e.message);
       }
     }

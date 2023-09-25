@@ -112,14 +112,6 @@ import { LoggerModule } from 'nestjs-pino';
                   dedupe: true,
                   targets: [
                     {
-                      target: 'pino-pretty',
-                      options: {
-                        levelFirst: true,
-                        translateTime: 'SYS:dd/mm/yyyy, h:MM:ss.l o',
-                      },
-                      level: 'info',
-                    },
-                    {
                       target: '@logtail/pino',
                       options: {
                         sourceToken: config.get('LOGTAIL_TOKEN_INFO'),
