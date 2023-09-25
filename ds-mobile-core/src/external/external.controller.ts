@@ -45,7 +45,6 @@ export class ExternalController {
       };
       return await this.externalService.getActiveSession(data);
     } catch (e) {
-      console.log(e);
       if (e instanceof ExternalBadRequestException) {
         throw new BadRequestException(e, e.message);
       } else if (e instanceof ExternalForbiddenException) {
@@ -73,7 +72,6 @@ export class ExternalController {
       };
       return await this.externalService.activatePromo(data);
     } catch (e) {
-      console.log(e);
       if (e instanceof ExternalBadRequestException) {
         throw new BadRequestException(e, e.message);
       } else if (e instanceof ExternalForbiddenException) {
@@ -116,7 +114,6 @@ export class ExternalController {
       } else if (e instanceof EntityNotFoundException) {
         throw new NotFoundException(e, e.message);
       } else {
-        console.log(e);
         throw new InternalServerErrorException(e, e.message);
       }
     }
