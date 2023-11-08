@@ -25,11 +25,11 @@ export class AuthController {
     const showModal = req.headers['show_modal'];
     const timeToResult = req.headers['time_to_result'];
     if (!showModal) {
-      return { message: 'Sucess' };
+      return { message: 'Success' };
     }
 
     if (!timeToResult) {
-      return { message: 'Sucess' };
+      return { message: 'Success' };
     }
     return this.authService.sendOtp(authRequestDto, timeToResult, showModal);
   }

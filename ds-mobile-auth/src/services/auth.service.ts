@@ -1,4 +1,6 @@
 import {
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   LoggerService,
@@ -30,7 +32,6 @@ import { formatPhoneUtil } from '../common/utils/format-phone.util';
 import { ICreateClientEvent } from '../common/inteface/create-client.event';
 import { ClientService } from './client.service';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom, lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class AuthService {
@@ -55,7 +56,7 @@ export class AuthService {
     const { phone } = authRequestDto;
     const dataToHash = `${showModal}${phone}`;
 
-    /*     // create HMAC
+    // create HMAC
     const secretCode = this.configService.get<string>('SECRET');
     const hashedData = crypto
       .createHmac('sha256', secretCode)
@@ -68,7 +69,7 @@ export class AuthService {
         HttpStatus.BAD_GATEWAY,
       );
     }
- */
+
     // 1 - generate otp code
     const otp = this.generateOtp();
     const message = `Ваш код ${otp}`;
