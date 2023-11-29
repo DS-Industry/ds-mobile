@@ -55,7 +55,7 @@ export class AuthService {
   ) {
     const { phone } = authRequestDto;
     const dataToHash = `${showModal}${phone}`;
-/* 
+
     // create HMAC
     const secretCode = this.configService.get<string>('SECRET');
     const hashedData = crypto
@@ -69,7 +69,7 @@ export class AuthService {
         HttpStatus.BAD_GATEWAY,
       );
     }
- */
+
     // 1 - generate otp code
     const otp = this.generateOtp();
     const message = `Ваш код ${otp}`;
