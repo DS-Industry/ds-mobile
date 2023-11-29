@@ -11,7 +11,6 @@ import { ClientModule } from './client.module';
 import { POSTGRES_DB_CONNECTION } from '../common/utils/constants';
 import { AuthModule } from './auth.module';
 import { BeelineModule } from '../beeline/beeline.module';
-//import { LogInterceptor } from '../common/interceptor/log.interceptor';
 import { LoggerModule } from 'nestjs-pino';
 
 @Module({
