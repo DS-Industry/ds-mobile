@@ -75,7 +75,7 @@ export class AuthService {
     const message = `Ваш код ${otp}`;
     // 2 - add code to database
 
-/*     const addOtp: AddOtpResponseDto = await this.addOtpForVerification(
+    /*     const addOtp: AddOtpResponseDto = await this.addOtpForVerification(
        otp,
       phone,
     ); */
