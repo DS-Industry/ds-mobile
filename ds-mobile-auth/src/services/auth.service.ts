@@ -63,7 +63,7 @@ export class AuthService {
     //create sha256 hash
     const hash = this.hashStringWithSecret(clientMeta, secret);
 
-    if (!this.compareHashes(hash, inputHash)) {
+    if (hash !== inputHash) {
       throw new UnauthorizedException('Unauthorized');
     }
 
