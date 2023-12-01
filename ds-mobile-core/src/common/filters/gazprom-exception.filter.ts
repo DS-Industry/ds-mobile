@@ -11,7 +11,6 @@ export class GazpromExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    console.log(exception);
     this.logger.error(
       `${request.method} ${request.url} || ${GazpromExceptionFilter.name} `,
       exception.stack,

@@ -3,6 +3,7 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
+  ForbiddenException,
   Post,
   Req,
   UseInterceptors,
@@ -19,31 +20,34 @@ import { SignInRequestDto } from '../dto/req/sign-in-request.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Throttle(1, 60)
+  @Throttle(1, 65)
   @Post('/send/otp')
-  public sendOTP(@Body() authRequestDto: AuthRequestDto, @Req() req: any) {
+  public async sendOTP(
+    @Body() authRequestDto: AuthRequestDto,
+    @Req() req: any,
+  ) {
     const showModal = req.headers['show_modal'];
     const timeToResult = req.headers['time_to_result'];
-    if (!showModal) {
-      return { message: 'Success' };
+    if (!showModal && timeToResult) {
+      throw new ForbiddenException('Forbidden');
     }
-
-    if (!timeToResult) {
-      return { message: 'Success' };
-    }
-    return this.authService.sendOtp(authRequestDto, timeToResult, showModal);
+    return await this.authService.sendOtp(
+      authRequestDto,
+      timeToResult,
+      showModal,
+    );
   }
 
   @Throttle(5, 60)
   @Post('/signup')
-  public signUp(@Body() optVerification: OtpVerificationRequestDto) {
-    return this.authService.signUp(optVerification);
+  public async signUp(@Body() optVerification: OtpVerificationRequestDto) {
+    return await this.authService.signUp(optVerification);
   }
 
   @Throttle(5, 60)
   @Post('/signin')
-  public signIn(@Body() optVerification: SignInRequestDto) {
-    return this.authService.signIn(optVerification);
+  public async signIn(@Body() optVerification: SignInRequestDto) {
+    return await this.authService.signIn(optVerification);
   }
 
   @Post('web/login')

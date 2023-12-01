@@ -99,7 +99,6 @@ export class GazpromRepository {
       );
       return new SubscribtionStatusDto(request.data.items, request.data.count);
     } catch (err) {
-      console.log(err);
       const { response } = err;
       return new GazpormErrorDto(
         response.data.code,

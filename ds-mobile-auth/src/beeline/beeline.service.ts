@@ -30,8 +30,6 @@ export class BeelineService {
         )
         .pipe(
           map((axiosResponse: AxiosResponse) => {
-            console.log('SMS Response_____________');
-            console.log(axiosResponse);
             return { message: 'Success', to: target };
           }),
         );

@@ -50,46 +50,32 @@ export class AuthService {
    */
   public async sendOtp(
     authRequestDto: AuthRequestDto,
-    secret: string,
+    inputHash: string,
     showModal: string,
   ) {
     const { phone } = authRequestDto;
-    const dataToHash = `${showModal}${phone}`;
+    //Collect client meta data
+    const clientMeta = `${showModal}${phone}`;
 
-    // create HMAC
-    const secretCode = this.configService.get<string>('SECRET');
-    const hashedData = crypto
-      .createHmac('sha256', secretCode)
-      .update(dataToHash)
-      .digest('hex');
+    //Get secret from .env
+    const secret: string = this.configService.get<string>('SECRET');
 
-    if (hashedData !== secret) {
-      throw new HttpException(
-        'something went wrong...',
-        HttpStatus.BAD_GATEWAY,
-      );
+    //create sha256 hash
+    const hash = this.hashStringWithSecret(clientMeta, secret);
+
+    if (!this.compareHashes(hash, inputHash)) {
+      throw new UnauthorizedException('Unauthorized');
     }
 
     // 1 - generate otp code
     const otp = this.generateOtp();
     const message = `Ваш код ${otp}`;
-    // 2 - add code to database
 
-    /*     const addOtp: AddOtpResponseDto = await this.addOtpForVerification(
-       otp,
-      phone,
-    ); */
+    await this.addOtpForVerification(otp, phone);
 
-    const [addOtp, res] = await Promise.all([
-      this.addOtpForVerification(otp, phone),
-      this.beelineService.send(message, phone),
-    ]);
+    const smsReq = await this.beelineService.send(message, phone);
 
-    //const res = await this.beelineService.send(message, phone);
-
-    // 4 - if phone was send successfully return
-    // 5 - if not then return error
-    return res;
+    return smsReq;
   }
 
   /**
@@ -150,7 +136,6 @@ export class AuthService {
         };
         this.eventEmitter.emit('client.created', clientPayload);
       } catch (e) {
-        console.log(e);
       }
 
       return Object.assign(clientResponse, authorizedClient, apiKey);
@@ -497,5 +482,28 @@ export class AuthService {
    */
   private generateUniqueMessageId() {
     return Math.floor(Math.random() * Date.now());
+  }
+
+  // Function to hash a string using SHA-256
+  private hashStringWithSecret(inputString: string, secretKey: string): string {
+    const hmac = crypto.createHmac('sha256', secretKey);
+    hmac.update(inputString);
+    return hmac.digest('hex');
+  }
+
+  // Function to compare two hashes in a constant-time manner
+  private compareHashes(hash1: string, hash2: string): boolean {
+    // Ensure both hashes have the same length before comparing
+    if (hash1.length !== hash2.length) {
+      return false;
+    }
+
+    // Use crypto.timingSafeEqual for constant-time comparison
+    const areEqual = crypto.timingSafeEqual(
+      Buffer.from(hash1, 'hex'),
+      Buffer.from(hash2, 'hex'),
+    );
+
+    return areEqual;
   }
 }
