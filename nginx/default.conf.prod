@@ -19,7 +19,7 @@ server {
        return 403;
     }
 
-    location /auth/api/v1/send/otp/ {
+    location /auth/api/v1/send/otp {
 
         if ($http_show_modal = "") {
             return 403;  # Forbidden
