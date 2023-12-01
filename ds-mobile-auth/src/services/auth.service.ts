@@ -51,20 +51,18 @@ export class AuthService {
   public async sendOtp(
     authRequestDto: AuthRequestDto,
     inputHash: string,
-    showModal: string,
+    metaData: string,
   ) {
     const { phone } = authRequestDto;
     //Collect client meta data
-    const clientMeta = `${showModal}${phone}`;
+    const clientMeta = `${metaData}${phone}`;
 
     //Get secret from .env
     const secret: string = this.configService.get<string>('SECRET');
 
     //create sha256 hash
     const hash = this.hashStringWithSecret(clientMeta, secret);
-    console.log(`CLINET HASH ${inputHash}`);
-    console.log(`INTERNAL HASH ${inputHash}`);
-    if (hash !== inputHash) {
+    if (!this.compareHashes(hash, inputHash)) {
       throw new UnauthorizedException('Unauthorized');
     }
 

@@ -21,6 +21,14 @@ server {
 
     location /auth/api/v1/send/otp/ {
 
+        if ($http_show_modal = "") {
+            return 403;  # Forbidden
+        }
+
+        if ($http_time_to_result = "") {
+            return 403;  # Forbidden
+        }
+
         limit_req zone=one_req_per_minute burst=1 nodelay;
 
         proxy_set_header X-Real-IP $remote_addr;
