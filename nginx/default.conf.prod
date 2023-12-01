@@ -9,7 +9,6 @@ map $http_user_agent $bad_user_agent {
   "~*python-requests/2.29.0" 1;
 }
 
-limit_req_zone $binary_remote_addr zone=one_req_per_minute:10m rate=1r/m;
 
 server {
     listen 5050;
@@ -20,7 +19,7 @@ server {
     }
 
     location /auth/api/v1/send/otp/ {
-
+        limit_req_zone $binary_remote_addr zone=one_req_per_minute:10m rate=1r/m;
         if ($http_show_modal = "") {
             return 403;  # Forbidden
         }
