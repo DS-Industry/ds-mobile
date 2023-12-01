@@ -62,7 +62,8 @@ export class AuthService {
 
     //create sha256 hash
     const hash = this.hashStringWithSecret(clientMeta, secret);
-
+    console.log(`CLINET HASH ${inputHash}`);
+    console.log(`INTERNAL HASH ${inputHash}`);
     if (hash !== inputHash) {
       throw new UnauthorizedException('Unauthorized');
     }
