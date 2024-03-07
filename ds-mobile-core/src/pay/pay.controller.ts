@@ -12,6 +12,7 @@ import { AuthService } from '../auth/auth.service';
 import { RequestHeader } from '../common/decorators/request-header.decorator';
 import { CardPayHeaderDto } from './dto/req/card-pay-header.dto';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import {SkipThrottle} from "@nestjs/throttler";
 
 @Controller('pay')
 export class PayController {
@@ -21,6 +22,7 @@ export class PayController {
   ) {}
 
   @Post('add')
+  @SkipThrottle(true)
   @UseGuards(JwtAuthGuard)
   public async addPayment(
     @Body() addPaymentRequest: AddPaymentRequestDto,
