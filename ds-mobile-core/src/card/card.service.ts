@@ -22,6 +22,9 @@ import {
 } from '../common/constants';
 import { PromoTariff } from '../common/models/promo-tariff.model';
 import { SubscribtionStatus } from '../common/enums/subscribtion-status.enum';
+import {CardUzbekActionDto} from "./dto/req/card-uzbek-action.dto";
+import {AuthService} from "../auth/auth.service";
+import {UzbekCode} from "../common/enums/uzbek-code.enum";
 
 @Injectable()
 export class CardService {
@@ -31,6 +34,7 @@ export class CardService {
     @InjectRepository(VCardOper) private vCardRepository: Repository<VCardOper>,
     @InjectRepository(PromoTariff)
     private readonly promoTariffRepository: Repository<PromoTariff>,
+    private readonly authService: AuthService
   ) {}
 
   public async getCardBalance(
@@ -302,5 +306,13 @@ WHERE c.SEARCH_DEV_NOMER = '${card}') t`;
     if (!card) throw new EntityNotFoundException(ENTITY_NOT_FOUND_MSG);
 
     return card;
+  }
+
+  public async uzbekAction(input: CardUzbekActionDto) {
+    await this.authService.verifyAccessToken(input.devNumber, input.accessToken);
+    if(input.code != UzbekCode.ACTION){
+      throw new EntityNotFoundException(ENTITY_NOT_FOUND_MSG);
+    }
+    return await this.update(input.devNumber, {cardTypeId: 1927})
   }
 }

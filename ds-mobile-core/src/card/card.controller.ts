@@ -9,7 +9,7 @@ import {
   ClassSerializerInterceptor,
   UseGuards,
   Req,
-  CacheInterceptor,
+  CacheInterceptor, Post, Body,
 } from '@nestjs/common';
 import { CardService } from './card.service';
 import { PaginationsOptionsInterface } from '../common/paginate/paginations-options.interface';
@@ -21,6 +21,7 @@ import { CardHeader } from './dto/req/card-header.dto';
 import { CardBalanceRequest } from './dto/req/card-balance-request.dto';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import {CardUzbekActionDto} from "./dto/req/card-uzbek-action.dto";
 
 @Controller('card')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -93,5 +94,11 @@ export class CardController {
   ) {
     const { card } = query;
     return this.cardService.getCardTariff(card);
+  }
+
+  @Post('/uzbek/action')
+  @HttpCode(201)
+  public async uzbekAction(@Body() data: CardUzbekActionDto) {
+    return this.cardService.uzbekAction(data);
   }
 }
