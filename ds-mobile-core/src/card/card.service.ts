@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {HttpException, Injectable, InternalServerErrorException} from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Between, DataSource, Repository, UpdateResult } from 'typeorm';
 import { CardBalanceResponse } from './dto/res/card-balance-response.dto';
@@ -25,6 +25,7 @@ import { SubscribtionStatus } from '../common/enums/subscribtion-status.enum';
 import {CardUzbekActionDto} from "./dto/req/card-uzbek-action.dto";
 import {AuthService} from "../auth/auth.service";
 import {UzbekCode} from "../common/enums/uzbek-code.enum";
+import {ExternalForbiddenException} from "../common/exceptions/external-forbidden.exception";
 
 @Injectable()
 export class CardService {
@@ -312,6 +313,14 @@ WHERE c.SEARCH_DEV_NOMER = '${card}') t`;
     await this.authService.verifyAccessToken(input.devNumber, input.accessToken);
     if(input.code != UzbekCode.ACTION){
       throw new EntityNotFoundException(ENTITY_NOT_FOUND_MSG);
+    }
+    const card: Card = await this.cardRepository.findOne({
+      where: {
+        devNomer: input.devNumber,
+      },
+    });
+    if (card.cardTypeId == 1927){
+      throw new HttpException('the card is on the partner tariff', 403);
     }
     return await this.update(input.devNumber, {cardTypeId: 1927})
   }

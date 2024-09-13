@@ -99,6 +99,10 @@ export class CardController {
   @Post('/uzbek/action')
   @HttpCode(201)
   public async uzbekAction(@Body() data: CardUzbekActionDto) {
-    return this.cardService.uzbekAction(data);
+    try {
+      return this.cardService.uzbekAction(data);
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 }
