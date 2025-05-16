@@ -7,7 +7,7 @@ import { BeelineModule } from '../beeline/beeline.module';
 import { ClientModule } from './client.module';
 
 @Module({
-  imports: [HttpModule, ConfigModule, BeelineModule, ClientModule],
+  imports: [HttpModule, ConfigModule, BeelineModule],
   controllers: [AuthController],
   providers: [AuthService],
 })

@@ -34,28 +34,28 @@ import { LoggerModule } from 'nestjs-pino';
       inject: [ConfigService],
     }),
     EventEmitterModule.forRoot(),
-    TypeOrmModule.forRootAsync({
-      name: POSTGRES_DB_CONNECTION,
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        name: POSTGRES_DB_CONNECTION,
-        type: 'postgres',
-        host: configService.get('PSQL_HOST'),
-        port: configService.get('PSQL_PORT'),
-        username: configService.get('PSQL_USERNAME'),
-        password: configService.get('PSQL_PASSWORD'),
-        database: configService.get('PSQL_DB_NAME'),
-        synchronize: false,
-        ssl: {
-          ca: fs
-            .readFileSync(path.join(__dirname, '..', '..', 'ssl', 'root.crt'))
-            .toString(),
-        },
-        entities: [Client],
-        migrations: [],
-      }),
-      inject: [ConfigService],
-    }),
+    // TypeOrmModule.forRootAsync({
+    //   name: POSTGRES_DB_CONNECTION,
+    //   imports: [ConfigModule],
+    //   useFactory: (configService: ConfigService) => ({
+    //     name: POSTGRES_DB_CONNECTION,
+    //     type: 'postgres',
+    //     host: configService.get('PSQL_HOST'),
+    //     port: configService.get('PSQL_PORT'),
+    //     username: configService.get('PSQL_USERNAME'),
+    //     password: configService.get('PSQL_PASSWORD'),
+    //     database: configService.get('PSQL_DB_NAME'),
+    //     synchronize: false,
+    //     ssl: {
+    //       ca: fs
+    //         .readFileSync(path.join(__dirname, '..', '..', 'ssl', 'root.crt'))
+    //         .toString(),
+    //     },
+    //     entities: [Client],
+    //     migrations: [],
+    //   }),
+    //   inject: [ConfigService],
+    // }),
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -64,7 +64,6 @@ import { LoggerModule } from 'nestjs-pino';
         limit: config.get<number>('LIMIT'),
       }),
     }),
-    ClientModule,
     AuthModule,
     BeelineModule,
     LoggerModule.forRootAsync({
@@ -122,8 +121,8 @@ import { LoggerModule } from 'nestjs-pino';
                       options: { sourceToken: config.get('LOGTAIL_TOKEN') },
                       level: 'error',
                     },
-                  ], 
-                }, 
+                  ],
+                },
               },
       }),
     }),
