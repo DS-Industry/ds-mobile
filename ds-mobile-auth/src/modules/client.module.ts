@@ -5,7 +5,7 @@ import { Client } from '../entity/client.entity';
 import { POSTGRES_DB_CONNECTION } from '../common/utils/constants';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Client], POSTGRES_DB_CONNECTION)],
+  imports: [],
   providers: [ClientService],
   exports: [ClientService],
 })

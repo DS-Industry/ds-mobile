@@ -40,7 +40,7 @@ export class AuthService {
     private readonly beelineService: BeelineService,
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly eventEmitter: EventEmitter2,
-    private readonly clientService: ClientService,
+    // private readonly clientService: ClientService,
     private readonly httpService: HttpService,
   ) {}
 
@@ -134,8 +134,7 @@ export class AuthService {
           isLetterAccepted: authRequest.isLetterAccepted,
         };
         this.eventEmitter.emit('client.created', clientPayload);
-      } catch (e) {
-      }
+      } catch (e) {}
 
       return Object.assign(clientResponse, authorizedClient, apiKey);
     } catch (e) {
@@ -157,7 +156,7 @@ export class AuthService {
     client.isLetterAccepted = payload.isLetterAccepted;
     client.isTermsAccepted = payload.isTermsAccepted;
 
-    await this.clientService.create(client);
+    //await this.clientService.create(client);
   }
 
   /**
