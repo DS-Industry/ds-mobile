@@ -66,66 +66,29 @@ import { LoggerModule } from 'nestjs-pino';
     }),
     AuthModule,
     BeelineModule,
-    /*LoggerModule.forRootAsync({
+    LoggerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        pinoHttp:
-          process.env.NODE_ENV === 'development'
-            ? {
-                serializers: {
-                  req(req) {
-                    req.body = req.raw.body;
-                    return req;
-                  },
-                },
-                transport: {
-                  dedupe: true,
-                  targets: [
-                    {
-                      target: 'pino-pretty',
-                      options: {
-                        levelFirst: true,
-                        translateTime: 'SYS:dd/mm/yyyy, h:MM:ss.l o',
-                      },
-                      level: 'info',
-                    },
-                  ],
-                },
-              }
-            : {
-                customSuccessMessage(req, res) {
-                  return `${req.method} [${req.url}] || ${res.statusMessage}`;
-                },
-                customErrorMessage(req, res, error) {
-                  return `${req.method} [${req.url}] || ${error.message}`;
-                },
-                serializers: {
-                  req(req) {
-                    req.body = req.raw.body;
-                    return req;
-                  },
-                },
-                transport: {
-                  dedupe: true,
-                  targets: [
-                    {
-                      target: '@logtail/pino',
-                      options: {
-                        sourceToken: config.get('LOGTAIL_TOKEN_INFO'),
-                      },
-                      level: 'info',
-                    },
-                    {
-                      target: '@logtail/pino',
-                      options: { sourceToken: config.get('LOGTAIL_TOKEN') },
-                      level: 'error',
-                    },
-                  ],
-                },
-              },
+      useFactory: () => ({
+        pinoHttp: {
+          serializers: {
+            req(req) {
+              req.body = req.raw.body;
+              return req;
+            },
+          },
+          transport: {
+            target: 'pino-pretty',
+            options: {
+              levelFirst: true,
+              translateTime: 'SYS:dd/mm/yyyy, h:MM:ss.l o',
+              colorize: true,
+              ignore: 'pid,hostname',
+            },
+          },
+        },
       }),
-    }),*/
+    }),
   ],
   controllers: [],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
