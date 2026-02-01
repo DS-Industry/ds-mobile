@@ -66,7 +66,7 @@ import { LoggerModule } from 'nestjs-pino';
     }),
     AuthModule,
     BeelineModule,
-    LoggerModule.forRootAsync({
+    /*LoggerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -125,7 +125,7 @@ import { LoggerModule } from 'nestjs-pino';
                 },
               },
       }),
-    }),
+    }),*/
   ],
   controllers: [],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

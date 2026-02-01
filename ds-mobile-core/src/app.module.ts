@@ -57,7 +57,7 @@ import { PromoTariff } from './common/models/promo-tariff.model';
     HttpModule,
     ClientModule,
     ExternalModule,
-    LoggerModule.forRootAsync({
+    /*LoggerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -116,7 +116,7 @@ import { PromoTariff } from './common/models/promo-tariff.model';
                 },
               },
       }),
-    }),
+    }),*/
   ],
   controllers: [],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
